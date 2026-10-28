@@ -18,6 +18,10 @@ final class LoginController extends AbstractController
     {
         $data = [];
         if ($this->isFormSubmitted($request)) {
+            if (!hash_equals($_SESSION['csrf_token'] ?? '', is_string($request->post('csrf_token')) ? $request->post('csrf_token') : '')) {
+                $data['errors'] = 'Formulaire expiré. Veuillez réessayer.';
+                return $this->render('login', 'Connexion', $data);
+            }
             // HTTP reste dans le contrôleur ; la logique métier reçoit un DTO.
             $input = LoginInput::fromArray([
                 'email' => $request->post('email'),
