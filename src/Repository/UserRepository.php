@@ -88,21 +88,23 @@ final class UserRepository extends AbstractRepository
     public function findByEmail(string $email): ?User
     {
         $sql = <<<SQL
-            SELECT u.id_user, u.firstname, u.lastname, u.email, 
-            u.hash_password, u.created_at, u.updated_at, 
-            u.img_profil, u.`grant` FROM `user` AS u 
+            SELECT u.id_user, u.firstname, u.lastname, u.email,
+                   u.hash_password, u.created_at, u.updated_at,
+                   u.img_profil, u.`grant`
+            FROM `user` AS u
             WHERE u.email = ?
             SQL;
-        try {
-            $stmt = $this->connect->prepare($sql);
-            $stmt->bindValue(1, $email, \PDO::PARAM_STR);
-            $stmt->execute();
-            $data = $stmt->fetch();
-            if ($data) $user = User::hydrate($data);
-        } catch (\PDOException $e) {
-            echo $e->getMessage();
+
+        $stmt = $this->connect->prepare($sql);
+        $stmt->execute([$email]);
+        $data = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+        if ($data === false) {
             return null;
         }
-        return $user ?? null;
+
+        $user = User::hydrate($data);
+        $user->setId((int) $data['id_user']);
+        return $user;
     }
 }
