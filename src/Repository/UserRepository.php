@@ -56,30 +56,33 @@ final class UserRepository extends AbstractRepository
     #[Override]
     public function create(Entity $entity): ?User
     {
+        if (!$entity instanceof User) {
+            throw new \InvalidArgumentException('UserRepository attend une entité User.');
+        }
+
         $sql = <<<SQL
-            INSERT INTO `user`(firstname, lastname, email, hash_password, created_at, 
-            img_profil, `grant`) VALUE (?,?,?,?,?,?,?)
+            INSERT INTO `user`(firstname, lastname, email, hash_password, created_at,
+            img_profil, `grant`) VALUES (?,?,?,?,?,?,?)
             SQL;
+
         try {
             $stmt = $this->connect->prepare($sql);
-            $stmt->bindValue(1, $entity->getFirstname(), \PDO::PARAM_STR);
-            $stmt->bindValue(2, $entity->getlastname(), \PDO::PARAM_STR);
-            $stmt->bindValue(3, $entity->getEmail(), \PDO::PARAM_STR);
-            $stmt->bindValue(4, $entity->getHashPassword(), \PDO::PARAM_STR);
-            $stmt->bindValue(5, $entity->getCreatedAt()->format('Y-m-d'), \PDO::PARAM_STR);
-            $stmt->bindValue(6, $entity->getImgProfil(), \PDO::PARAM_STR);
-            $stmt->bindValue(7, $entity->getGrant(), \PDO::PARAM_STR);
-            $stmt->execute();
-            $data = $stmt->fetch();
-            if ($data) {
-                $user = User::hydrate($data);
-                $user->setId($this->connect->lastInsertId());
-            }
+            $stmt->execute([
+                $entity->getFirstname(),
+                $entity->getLastname(),
+                $entity->getEmail(),
+                $entity->getHashPassword(),
+                $entity->getCreatedAt()->format('Y-m-d H:i:s'),
+                $entity->getImgProfil(),
+                $entity->getGrant(),
+            ]);
+
+            $entity->setId((int) $this->connect->lastInsertId());
+            return $entity;
         } catch (\PDOException $e) {
-            echo $e->getMessage();
+            // Laisser le service distinguer échec et succès sans afficher une erreur SQL.
             return null;
         }
-        return $user ?? null;
     }
 
     public function findByEmail(string $email): ?User
