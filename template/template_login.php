@@ -10,6 +10,7 @@
 <main class="container">
     <h1>Connexion</h1>
     <form action="/login" method="post">
+        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($this->getCsrfToken(), ENT_QUOTES, 'UTF-8') ?>">
         <label for="email">Email</label>
         <input id="email" type="email" name="email" autocomplete="username" required>
         <?php $this->renderComponent('error_validation', ['errors' => $data['validation']['email'] ?? []]); ?>
