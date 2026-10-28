@@ -8,7 +8,6 @@ use App\DTO\RegisterUserInput;
 use App\Entity\User;
 use App\Repository\UserRepository;
 use App\Security\PasswordHasher;
-use Mithridatem\Routing\Http\Request;
 use Mithridatem\Validation\Validator;
 
 final class UserService
@@ -18,18 +17,6 @@ final class UserService
         private Validator $validator,
         private PasswordHasher $passwordHasher,
     ) {}
-
-    /** Ancien point d'entrée maintenu pour les appels existants. */
-    public function addUser(Request $request): array
-    {
-        return $this->register(RegisterUserInput::fromArray([
-            'firstname' => $request->post('firstname'),
-            'lastname' => $request->post('lastname'),
-            'email' => $request->post('email'),
-            'password' => $request->post('password'),
-            'confirm_password' => $request->post('confirm_password'),
-        ]));
-    }
 
     /** Cas d'utilisation indépendant de HTTP. */
     public function register(RegisterUserInput $input): array
@@ -46,7 +33,9 @@ final class UserService
         }
 
         $user = $this->createUser($input);
-        $this->userRepository->create($user);
+        if ($this->userRepository->create($user) === null) {
+            return ['errors' => "Impossible d'enregistrer le compte"];
+        }
 
         return ['success' => 'Le compte ' . $email . ' a été ajouté avec succès'];
     }
