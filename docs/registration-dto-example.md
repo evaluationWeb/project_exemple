@@ -21,7 +21,7 @@ POST /register
         -> UserRepository::create(...)
 ```
 
-Les erreurs sont retournées sous les clés `validation` / `errors` et le succès sous `success`, comme dans l'exemple d'origine. L'ancien `UserService::addUser(Request $request)` demeure accessible pour une migration progressive, mais le contrôleur utilise désormais le DTO.
+Les erreurs sont retournées sous les clés `validation` / `errors` et le succès sous `success`, comme dans l'exemple d'origine. L'unique point d'entrée du service est désormais `UserService::register(RegisterUserInput $input)`. L'ancienne méthode HTTP `addUser(Request)` a été supprimée ; le contrôleur construit le DTO.
 
 ## Exemple sans contrôleur HTTP
 
@@ -57,6 +57,6 @@ Ce script vérifie la normalisation, la gestion des types inattendus, les contra
 
 ## Points à durcir ensuite
 
-- Vérifier explicitement les erreurs d'insertion du repository et retourner une erreur si la persistance échoue.
+- Le service teste désormais le retour de `UserRepository::create()` et n'annonce pas de succès si celui-ci vaut `null`. Vérifier le retour réel du repository et son traitement des erreurs SQL.
 - Traduire les violations de contrainte `UNIQUE(email)` en erreur métier en cas d'inscriptions concurrentes.
 - Envisager un résultat métier typé et des interfaces pour le repository et le hasher lorsque les tests de service deviennent nécessaires.
