@@ -20,27 +20,34 @@ final class RegisterController extends AbstractController
     #[Route(path: '/register', method: ['GET', 'POST'], grants: [])]
     public function register(RequestInterface $request): mixed
     {
-        $data = [];
-
-        if ($this->isFormSubmitted($request)) {
-            if (!$this->csrf->isValid('register', $request->post('csrf_token'))) {
-                $data['errors'] = 'Token CSRF invalide';
-            } else {
-                $input = RegisterUserInput::fromArray([
-                    'firstname' => $request->post('firstname'),
-                    'lastname' => $request->post('lastname'),
-                    'email' => $request->post('email'),
-                    'password' => $request->post('password'),
-                    'confirm_password' => $request->post('confirm_password'),
-                ]);
-
-                $data = $this->userService->register($input);
-            }
+        if (!$this->isFormSubmitted($request)) {
+            return $this->renderRegisterForm();
         }
 
-        // Garantit un token présent lors du GET et après un échec de formulaire.
-        $data['csrf_token'] = $this->csrf->generate('register');
+        if (!$this->csrf->isValid('register', $request->post('csrf_token'))) {
+            return $this->renderRegisterForm([
+                'errors' => 'Token CSRF invalide',
+            ]);
+        }
 
-        return $this->render('register', 'Inscription', $data);
+        $input = RegisterUserInput::fromArray([
+            'firstname' => $request->post('firstname'),
+            'lastname' => $request->post('lastname'),
+            'email' => $request->post('email'),
+            'password' => $request->post('password'),
+            'confirm_password' => $request->post('confirm_password'),
+        ]);
+
+        $result = $this->userService->register($input);
+
+        return $this->renderRegisterForm($result);
+    }
+
+    private function renderRegisterForm(array $data = []): mixed
+    {
+        return $this->render('register', 'Inscription', [
+            ...$data,
+            'csrf_token' => $this->csrf->generate('register'),
+        ]);
     }
 }
