@@ -16,43 +16,44 @@ final class LoginController extends AbstractController
     public function __construct(
         private LoginService $loginService,
         private UserSessionManager $session,
-        private CsrfTokenManager $csrf
+        private CsrfTokenManager $csrf,
     ) {}
 
     #[Route(path: '/login', method: 'GET', grants: [])]
     public function showLogin(): mixed
     {
-        return $this->render('login', 'Connexion', [
-            'csrf_token' => $this->csrf->generate('login')
-        ]);
+        return $this->renderLoginForm();
     }
 
     #[Route(path: '/login', method: 'POST', grants: [])]
     public function login(RequestInterface $request): mixed
     {
-        if (!$this->csrf->isValid(
-            'login',
-            $request->post('csrf_token')
-        )) {
-            return $this->render('login', 'Connexion', [
+        if (!$this->csrf->isValid('login', $request->post('csrf_token'))) {
+            return $this->renderLoginForm([
                 'errors' => 'Token CSRF invalide',
-                'csrf_token' => $this->csrf->generate('login'),
             ]);
         }
 
-        $result = $this->loginService->login(LoginInput::fromArray([
+        $input = LoginInput::fromArray([
             'email' => $request->post('email'),
             'password' => $request->post('password'),
-        ]));
+        ]);
+
+        $result = $this->loginService->login($input);
 
         if (!isset($result['user'])) {
-            return $this->render('login', 'Connexion', [
-                ...$result,
-                'csrf_token' => $this->csrf->generate('login'),
-            ]);
+            return $this->renderLoginForm($result);
         }
 
         $this->session->login($result['user']);
         $this->redirect('/');
+    }
+
+    private function renderLoginForm(array $data = []): mixed
+    {
+        return $this->render('login', 'Connexion', [
+            ...$data,
+            'csrf_token' => $this->csrf->generate('login'),
+        ]);
     }
 }
