@@ -35,8 +35,7 @@ final class LoginController extends AbstractController
             $request->post('csrf_token')
         )) {
             return $this->render('login', 'Connexion', [
-                'errors' => 'Token CSRF invalide',
-                'csrf_token' => $this->csrf->generate('login'),
+                'errors' => 'Token CSRF invalide'
             ]);
         }
 
@@ -46,10 +45,7 @@ final class LoginController extends AbstractController
         ]));
 
         if (!isset($result['user'])) {
-            return $this->render('login', 'Connexion', [
-                ...$result,
-                'csrf_token' => $this->csrf->generate('login'),
-            ]);
+            return $this->render('login', 'Connexion', $result);
         }
 
         $this->session->login($result['user']);

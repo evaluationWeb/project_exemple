@@ -26,12 +26,12 @@ final class CsrfTokenManager
     /**
      * Méthode qui teste si le Token CSRF est valide
      * @param string $formId id du formulaire
-     * @param mixed $token valeur transmise par le formulaire HTTP
+     * @param ?string $token token CSRF à vérifier
      * @return bool true si valide ou false
      */
     public function isValid(
         string $formId,
-        mixed $token
+        ?string $token
     ): bool {
         $this->ensureSession();
 
