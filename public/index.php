@@ -17,7 +17,8 @@ use Mithridatem\Routing\Router;
 header('X-Frame-Options: DENY');
 header('X-Content-Type-Options: nosniff');
 header('Referrer-Policy: no-referrer');
-header("Content-Security-Policy: default-src 'self'; style-src 'self' https://cdn.jsdelivr.net; img-src 'self' data:; script-src 'self'; object-src 'none'; frame-ancestors 'none';");
+header("Content-Security-Policy: default-src 'self'; style-src 'self' https://cdn.jsdelivr.net; 
+img-src 'self' data:; script-src 'self'; object-src 'none'; frame-ancestors 'none';");
 
 //Configuration session
 session_set_cookie_params([

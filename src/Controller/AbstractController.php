@@ -15,7 +15,7 @@ abstract class AbstractController
      */
     protected function render(string $template, ?string $title, array $data = []): mixed
     {
-       return include __DIR__ . "/../../template/template_" . $template . ".php";
+        return include __DIR__ . "/../../template/template_" . $template . ".php";
     }
 
     /**
@@ -41,39 +41,26 @@ abstract class AbstractController
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode($data, JSON_PRETTY_PRINT);
     }
-    
+
     /**
      * Méthode pour vérifier si un formulaire a été soumis
      * @param RequestInterface $request La requête HTTP
+     * @param string $inputSubmit par défaul name submit
      * @return bool Vrai si le corps de la requête n'est pas vide, faux sinon
      */
-    protected function isFormSubmitted(RequestInterface $request): bool
+    protected function isFormSubmitted(RequestInterface $request, string $inputSubmit = "submit"): bool
     {
-        return !empty($request->getContent());
+        return !empty($request->post($inputSubmit));
     }
 
     /**
-     * Méthode pour générer un Token CSRF
-     * @return string $token CSRF Token
+     * Méthode pour rediriger vers une route
+     * @param string $route route de redirection
+     * @return void
      */
-    protected function getCsrfToken(): string
+    protected function redirect(string $route): void
     {
-        if (empty($_SESSION["csrf_token"])) {
-            $_SESSION["csrf_token"] = bin2hex(random_bytes(32));
-        }
-
-        return $_SESSION["csrf_token"];
-    }
-
-    /**
-     * Méthode pour tester la validé du token CSRF
-     * @return bool $token true si valide false invalide 
-     */
-    protected function isCsrfTokenValid(array $post): bool
-    {
-        $token = $post["csrf_token"] ?? "";
-        $sessionToken = $_SESSION["csrf_token"] ?? "";
-
-        return !empty($token) && !empty($sessionToken) && hash_equals($sessionToken, $token);
+        header("Location: " . $route, true, 303);
+        exit;
     }
 }

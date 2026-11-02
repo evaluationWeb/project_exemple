@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\DTO\LoginInput;
+use App\Security\CsrfTokenManager;
 use App\Security\UserSessionManager;
 use App\Service\LoginService;
 use Mithridatem\Routing\Attribute\Route;
@@ -15,20 +16,26 @@ final class LoginController extends AbstractController
     public function __construct(
         private LoginService $loginService,
         private UserSessionManager $session,
+        private CsrfTokenManager $csrf
     ) {}
 
     #[Route(path: '/login', method: 'GET', grants: [])]
     public function showLogin(): mixed
     {
-        return $this->render('login', 'Connexion');
+        return $this->render('login', 'Connexion', [
+            'csrf_token' => $this->csrf->generate('login')
+        ]);
     }
 
     #[Route(path: '/login', method: 'POST', grants: [])]
     public function login(RequestInterface $request): mixed
     {
-        if (!$this->isCsrfTokenValid(['csrf_token' => $request->post('csrf_token')])) {
+        if (!$this->csrf->isValid(
+            'login',
+            $request->post('csrf_token')
+        )) {
             return $this->render('login', 'Connexion', [
-                'errors' => 'Formulaire expiré. Veuillez réessayer.',
+                'errors' => 'Token CSRF invalide'
             ]);
         }
 
