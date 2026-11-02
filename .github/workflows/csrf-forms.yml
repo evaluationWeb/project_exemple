@@ -33,7 +33,9 @@ jobs:
           php -l template/template_register.php
           php -l tests/csrf_token_manager_test.php
           php -l tests/form_submission_test.php
+          php -l tests/auth_form_render_test.php
       - name: Run focused tests
         run: |
           php tests/csrf_token_manager_test.php
           php tests/form_submission_test.php
+          php tests/auth_form_render_test.php
