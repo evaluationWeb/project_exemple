@@ -41,7 +41,8 @@ final class CsrfTokenManager
         if (
             !is_string($token)
             || !is_string($storedToken)
-            || $token === ''\n            || $storedToken === ''
+            || $token === ''
+            || $storedToken === ''
         ) {
             return false;
         }
