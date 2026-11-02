@@ -28,6 +28,8 @@ final class LoginController extends AbstractController
     #[Route(path: '/login', method: 'POST', grants: [])]
     public function login(RequestInterface $request): mixed
     {
+        $result = [];
+
         $isCsrfValid = $this->csrf->isValid(
             'login',
             $request->post('csrf_token')
