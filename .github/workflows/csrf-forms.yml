@@ -1,0 +1,39 @@
+name: Verify form submission and CSRF
+
+on:
+  pull_request:
+    paths:
+      - 'src/Controller/**'
+      - 'src/Security/CsrfTokenManager.php'
+      - 'template/template_register.php'
+      - 'tests/csrf_token_manager_test.php'
+      - 'tests/form_submission_test.php'
+      - 'composer.json'
+      - '.github/workflows/csrf-forms.yml'
+  workflow_dispatch:
+
+jobs:
+  csrf-forms:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, intl, pdo_mysql
+          tools: composer:v2
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist
+      - name: Check PHP syntax
+        run: |
+          php -l src/Controller/AbstractController.php
+          php -l src/Security/CsrfTokenManager.php
+          php -l src/Controller/LoginController.php
+          php -l src/Controller/RegisterController.php
+          php -l template/template_register.php
+          php -l tests/csrf_token_manager_test.php
+          php -l tests/form_submission_test.php
+      - name: Run focused tests
+        run: |
+          php tests/csrf_token_manager_test.php
+          php tests/form_submission_test.php
