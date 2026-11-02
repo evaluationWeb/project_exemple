@@ -20,25 +20,30 @@ final class RegisterController extends AbstractController
     #[Route(path: '/register', method: ['GET', 'POST'], grants: [])]
     public function register(RequestInterface $request): mixed
     {
-        if (!$this->isFormSubmitted($request)) {
-            return $this->renderRegisterForm();
+        $result = [];
+
+        if ($this->isFormSubmitted($request)) {
+            $isCsrfValid = $this->csrf->isValid(
+                'register',
+                $request->post('csrf_token')
+            );
+
+            if (!$isCsrfValid) {
+                $result = ['errors' => 'Token CSRF invalide'];
+            }
+
+            if ($isCsrfValid) {
+                $input = RegisterUserInput::fromArray([
+                    'firstname' => $request->post('firstname'),
+                    'lastname' => $request->post('lastname'),
+                    'email' => $request->post('email'),
+                    'password' => $request->post('password'),
+                    'confirm_password' => $request->post('confirm_password'),
+                ]);
+
+                $result = $this->userService->register($input);
+            }
         }
-
-        if (!$this->csrf->isValid('register', $request->post('csrf_token'))) {
-            return $this->renderRegisterForm([
-                'errors' => 'Token CSRF invalide',
-            ]);
-        }
-
-        $input = RegisterUserInput::fromArray([
-            'firstname' => $request->post('firstname'),
-            'lastname' => $request->post('lastname'),
-            'email' => $request->post('email'),
-            'password' => $request->post('password'),
-            'confirm_password' => $request->post('confirm_password'),
-        ]);
-
-        $result = $this->userService->register($input);
 
         return $this->renderRegisterForm($result);
     }
