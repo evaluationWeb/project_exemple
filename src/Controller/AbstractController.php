@@ -43,12 +43,14 @@ abstract class AbstractController
     }
 
     /**
-     * Indique si la requête correspond à une soumission de formulaire POST.
-     * Un bouton submit nommé n'est pas nécessaire.
+     * Méthode pour vérifier si un formulaire a été soumis
+     * @param RequestInterface $request La requête HTTP
+     * @param string $inputSubmit par défaul name submit
+     * @return bool Vrai si le corps de la requête n'est pas vide, faux sinon
      */
-    protected function isFormSubmitted(RequestInterface $request): bool
+    protected function isFormSubmitted(RequestInterface $request, string $inputSubmit = "submit"): bool
     {
-        return strtoupper($request->getMethod()) === 'POST';
+        return !empty($request->post($inputSubmit));
     }
 
     /**
