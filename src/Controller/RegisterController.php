@@ -23,9 +23,16 @@ final class RegisterController extends AbstractController
         $result = [];
 
         if ($this->isFormSubmitted($request)) {
-            if (!$this->csrf->isValid('register', $request->post('csrf_token'))) {
+            $isCsrfValid = $this->csrf->isValid(
+                'register',
+                $request->post('csrf_token')
+            );
+
+            if (!$isCsrfValid) {
                 $result = ['errors' => 'Token CSRF invalide'];
-            } else {
+            }
+
+            if ($isCsrfValid) {
                 $input = RegisterUserInput::fromArray([
                     'firstname' => $request->post('firstname'),
                     'lastname' => $request->post('lastname'),
