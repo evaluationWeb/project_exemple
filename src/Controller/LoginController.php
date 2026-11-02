@@ -28,9 +28,16 @@ final class LoginController extends AbstractController
     #[Route(path: '/login', method: 'POST', grants: [])]
     public function login(RequestInterface $request): mixed
     {
-        if (!$this->csrf->isValid('login', $request->post('csrf_token'))) {
+        $isCsrfValid = $this->csrf->isValid(
+            'login',
+            $request->post('csrf_token')
+        );
+
+        if (!$isCsrfValid) {
             $result = ['errors' => 'Token CSRF invalide'];
-        } else {
+        }
+
+        if ($isCsrfValid) {
             $input = LoginInput::fromArray([
                 'email' => $request->post('email'),
                 'password' => $request->post('password'),
