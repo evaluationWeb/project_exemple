@@ -8,7 +8,7 @@ require dirname(__DIR__) . '/vendor/autoload.php';
 use App\Controller\LoginController;
 use App\Controller\RegisterController;
 use App\Security\CsrfTokenManager;
-use Mithridatem\Routing\Http\RequestInterface;
+use Mithridatem\Routing\Http\Request;
 
 function assertForm(bool $condition, string $message): void
 {
@@ -17,18 +17,9 @@ function assertForm(bool $condition, string $message): void
     }
 }
 
-function formRequest(string $method, array $post = []): RequestInterface
+function formRequest(string $method, array $post = []): Request
 {
-    return new class($method, $post) implements RequestInterface {
-        public function __construct(private string $method, private array $post) {}
-        public function getMethod(): string { return $this->method; }
-        public function getPath(): string { return '/'; }
-        public function getBearerToken(): ?string { return null; }
-        public function query(string $name, mixed $default = null): mixed { return $default; }
-        public function post(string $name, mixed $default = null): mixed { return $this->post[$name] ?? $default; }
-        public function header(string $name, ?string $default = null): ?string { return $default; }
-        public function getContent(): string { return ''; }
-    };
+    return new Request('/', $method, post: $post);
 }
 
 function controllerForRender(string $class, CsrfTokenManager $csrf): object
