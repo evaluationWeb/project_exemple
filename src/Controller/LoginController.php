@@ -9,7 +9,7 @@ use App\Security\CsrfTokenManager;
 use App\Security\UserSessionManager;
 use App\Service\LoginService;
 use Mithridatem\Routing\Attribute\Route;
-use Mithridatem\Routing\Http\RequestInterface;
+use Mithridatem\Routing\Http\ParameterCollectionRequestInterface;
 
 final class LoginController extends AbstractController
 {
@@ -26,7 +26,7 @@ final class LoginController extends AbstractController
     }
 
     #[Route(path: '/login', method: 'POST', grants: [])]
-    public function login(RequestInterface $request): mixed
+    public function login(ParameterCollectionRequestInterface $request): mixed
     {
         $result = [];
 
@@ -40,10 +40,7 @@ final class LoginController extends AbstractController
         }
 
         if ($isCsrfValid) {
-            $input = LoginInput::fromArray([
-                'email' => $request->post('email'),
-                'password' => $request->post('password'),
-            ]);
+            $input = LoginInput::fromArray($request->allPost());
 
             $result = $this->loginService->login($input);
 
