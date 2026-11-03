@@ -8,6 +8,8 @@ on:
       - 'template/template_register.php'
       - 'tests/csrf_token_manager_test.php'
       - 'tests/form_submission_test.php'
+      - 'tests/auth_form_render_test.php'
+      - 'tests/request_dto_mapping_test.php'
       - 'composer.json'
       - '.github/workflows/csrf-forms.yml'
   workflow_dispatch:
@@ -34,8 +36,10 @@ jobs:
           php -l tests/csrf_token_manager_test.php
           php -l tests/form_submission_test.php
           php -l tests/auth_form_render_test.php
+          php -l tests/request_dto_mapping_test.php
       - name: Run focused tests
         run: |
           php tests/csrf_token_manager_test.php
           php tests/form_submission_test.php
           php tests/auth_form_render_test.php
+          php tests/request_dto_mapping_test.php
