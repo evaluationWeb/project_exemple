@@ -33,3 +33,16 @@ composer install
 ```sh
 php -S 127.0.0.1:8000 -t public
 ```
+
+## Requêtes HTTP et DTO (router ^1.4)
+
+Les actions POST de `RegisterController` et `LoginController` utilisent
+`ParameterCollectionRequestInterface::allPost()` pour construire les DTO via
+`fromArray()`. La validation CSRF précède toujours l'appel du service.
+Les services reçoivent uniquement les DTO et restent indépendants de HTTP.
+Le corps brut JSON reste accessible séparément avec `getContent()`.
+
+Test de correspondance des paramètres et DTO :
+```sh
+php tests/request_dto_mapping_test.php
+```

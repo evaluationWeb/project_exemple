@@ -8,7 +8,7 @@ use App\DTO\RegisterUserInput;
 use App\Security\CsrfTokenManager;
 use App\Service\UserService;
 use Mithridatem\Routing\Attribute\Route;
-use Mithridatem\Routing\Http\RequestInterface;
+use Mithridatem\Routing\Http\ParameterCollectionRequestInterface;
 
 final class RegisterController extends AbstractController
 {
@@ -18,7 +18,7 @@ final class RegisterController extends AbstractController
     ) {}
 
     #[Route(path: '/register', method: ['GET', 'POST'], grants: [])]
-    public function register(RequestInterface $request): mixed
+    public function register(ParameterCollectionRequestInterface $request): mixed
     {
         $result = [];
 
@@ -33,13 +33,7 @@ final class RegisterController extends AbstractController
             }
 
             if ($isCsrfValid) {
-                $input = RegisterUserInput::fromArray([
-                    'firstname' => $request->post('firstname'),
-                    'lastname' => $request->post('lastname'),
-                    'email' => $request->post('email'),
-                    'password' => $request->post('password'),
-                    'confirm_password' => $request->post('confirm_password'),
-                ]);
+                $input = RegisterUserInput::fromArray($request->allPost());
 
                 $result = $this->userService->register($input);
             }
