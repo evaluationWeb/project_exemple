@@ -5,10 +5,13 @@ declare(strict_types=1);
 require dirname(__DIR__) . '/vendor/autoload.php';
 
 use App\Middleware\ContainerMiddlewareResolver;
+use App\Middleware\RequestAuthenticationMiddleware;
+use App\Security\Authentication\AuthenticationContext;
+use App\Security\Authentication\ContextGrantChecker;
+use App\Security\Jwt\InvalidJwtException;
 use App\Middleware\InvalidCsrfTokenException;
 use Mithridatem\Autowiring\Container;
 use Mithridatem\Autowiring\Bridge\Routing\ContainerControllerResolver;
-use Mithridatem\Routing\Auth\ArrayGrantChecker;
 use Mithridatem\Routing\Exception\RouterException;
 use Mithridatem\Routing\Exception\RouteNotFoundException;
 use Mithridatem\Routing\Exception\UnauthorizedException;
@@ -48,10 +51,13 @@ $router->setControllerResolver(
     new ContainerControllerResolver($container)
 );
 $router->setMiddlewareResolver(new ContainerMiddlewareResolver($container));
+// A new container is constructed for each PHP-FPM request; the global middleware
+// additionally resets its context for repeated dispatches in the same process.
+$router->addMiddleware($container->get(RequestAuthenticationMiddleware::class));
 
 // Conserver ici les éventuels réglages de basePath et d'autorisations.
 $router->setGrantChecker(
-    new ArrayGrantChecker($_SESSION["user"]["grant"] ?? [])
+    $container->get(ContextGrantChecker::class)
 );
 
 // Charger les routes déclarées dans les contrôleurs avec #[Route].
@@ -63,6 +69,12 @@ $router->setGrantChecker(
 //Dispatch des routes
 try {
     $router->dispatch();
+} catch (InvalidJwtException $e) {
+    http_response_code(401);
+    header('Content-Type: application/json; charset=utf-8');
+    header('Cache-Control: no-store');
+    header('WWW-Authenticate: Bearer');
+    echo json_encode(['error' => 'Unauthorized']);
 } catch (InvalidCsrfTokenException $e) {
     http_response_code(403);
     header('Content-Type: text/html; charset=utf-8');
@@ -74,5 +86,12 @@ try {
 } catch (RouteNotFoundException $e) {
     echo $e->getMessage();
 } catch (UnauthorizedException $e) {
-    echo $e->getMessage();
+    http_response_code(403);
+    // API access denies are JSON; existing HTML route behavior remains a text message.
+    if (str_starts_with(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/', '/api/')) {
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode(['error' => 'Forbidden']);
+    } else {
+        echo $e->getMessage();
+    }
 }

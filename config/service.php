@@ -3,10 +3,17 @@
 declare(strict_types=1);
 
 use App\Database\Mysql;
+use App\Security\Jwt\JwtTokenManager;
 use App\Service\UploadFileService;
 use Mithridatem\Autowiring\Container;
 
 return static function (Container $container): void {
+    $container->configure(JwtTokenManager::class, [
+        'secret' => $_ENV['JWT_SECRET'] ?? '',
+        'issuer' => $_ENV['JWT_ISSUER'] ?? 'project-exemple',
+        'audience' => $_ENV['JWT_AUDIENCE'] ?? 'project-exemple-api',
+    ]);
+
     // Connexion créée au premier besoin, puis partagée.
     $container->factory(
         PDO::class,

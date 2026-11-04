@@ -1,5 +1,5 @@
 {
-    "name":"mithridatem/libray_project",
+    "name": "mithridatem/libray_project",
     "autoload": {
         "psr-4": {
             "App\\": "src/"
@@ -10,6 +10,7 @@
         "mithridatem/autowiring": "^1.2",
         "mithridatem/validation": "^1.2",
         "vlucas/phpdotenv": "^5.7",
-        "symfony/var-dumper": "*"
+        "symfony/var-dumper": "*",
+        "firebase/php-jwt": "^7.2"
     }
 }
