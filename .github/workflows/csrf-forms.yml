@@ -1,28 +1,14 @@
-name: Verify form submission and CSRF
+name: Verify stateless JWT API
 
 on:
+  push:
+    branches: [variant/api-jwt]
   pull_request:
-    paths:
-      - 'src/Controller/**'
-      - 'src/Security/**'
-      - 'src/Middleware/**'
-      - 'template/template_register.php'
-      - 'tests/csrf_token_manager_test.php'
-      - 'tests/csrf_middleware_test.php'
-      - 'tests/jwt_authentication_test.php'
-      - 'tests/jwt_api_routes_test.php'
-      - 'tests/csrf_route_configuration_test.php'
-      - 'public/index.php'
-      - 'tests/form_submission_test.php'
-      - 'tests/auth_form_render_test.php'
-      - 'tests/request_dto_mapping_test.php'
-      - 'composer.json'
-      - 'config/service.php'
-      - '.github/workflows/csrf-forms.yml'
+    paths: ['src/**', 'tests/**', 'public/**', 'config/**', 'composer.json', '.github/workflows/csrf-forms.yml']
   workflow_dispatch:
 
 jobs:
-  csrf-forms:
+  api:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -31,44 +17,9 @@ jobs:
           php-version: '8.3'
           extensions: mbstring, intl, pdo_mysql
           tools: composer:v2
-      - name: Install dependencies
-        run: composer install --no-interaction --prefer-dist
-      - name: Check PHP syntax
+      - run: composer install --no-interaction --prefer-dist
+      - name: PHP syntax check
+        run: find src public config tests -name '*.php' -print0 | xargs -0 -n1 php -l
+      - name: Run API tests
         run: |
-          php -l src/Security/Jwt/JwtTokenManager.php
-          php -l src/Security/Jwt/InvalidJwtException.php
-          php -l src/Security/Authentication/AuthenticationContext.php
-          php -l src/Security/Authentication/AuthenticatedUser.php
-          php -l src/Security/Authentication/ContextGrantChecker.php
-          php -l src/Middleware/JwtMiddleware.php
-          php -l src/Middleware/RequestAuthenticationMiddleware.php
-          php -l src/Controller/Api/AuthController.php
-          php -l src/Controller/Api/ProfileController.php
-          php -l config/service.php
-          php -l tests/jwt_authentication_test.php
-          php -l tests/jwt_api_routes_test.php
-          php -l src/Middleware/CsrfMiddleware.php
-          php -l src/Middleware/InvalidCsrfTokenException.php
-          php -l src/Middleware/ContainerMiddlewareResolver.php
-          php -l public/index.php
-          php -l tests/csrf_middleware_test.php
-          php -l tests/csrf_route_configuration_test.php
-          php -l src/Controller/AbstractController.php
-          php -l src/Security/CsrfTokenManager.php
-          php -l src/Controller/LoginController.php
-          php -l src/Controller/RegisterController.php
-          php -l template/template_register.php
-          php -l tests/csrf_token_manager_test.php
-          php -l tests/form_submission_test.php
-          php -l tests/auth_form_render_test.php
-          php -l tests/request_dto_mapping_test.php
-      - name: Run focused tests
-        run: |
-          php tests/jwt_authentication_test.php
-          php tests/jwt_api_routes_test.php
-          php tests/csrf_token_manager_test.php
-          php tests/csrf_middleware_test.php
-          php tests/csrf_route_configuration_test.php
-          php tests/form_submission_test.php
-          php tests/auth_form_render_test.php
-          php tests/request_dto_mapping_test.php
+          for test in tests/*_test.php; do php "$test"; done
