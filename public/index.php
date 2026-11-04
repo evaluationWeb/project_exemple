@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 require dirname(__DIR__) . '/vendor/autoload.php';
 
+use App\Middleware\ContainerMiddlewareResolver;
+use App\Middleware\InvalidCsrfTokenException;
 use Mithridatem\Autowiring\Container;
 use Mithridatem\Autowiring\Bridge\Routing\ContainerControllerResolver;
 use Mithridatem\Routing\Auth\ArrayGrantChecker;
@@ -45,6 +47,7 @@ $router = new Router();
 $router->setControllerResolver(
     new ContainerControllerResolver($container)
 );
+$router->setMiddlewareResolver(new ContainerMiddlewareResolver($container));
 
 // Conserver ici les éventuels réglages de basePath et d'autorisations.
 $router->setGrantChecker(
@@ -60,6 +63,12 @@ $router->setGrantChecker(
 //Dispatch des routes
 try {
     $router->dispatch();
+} catch (InvalidCsrfTokenException $e) {
+    http_response_code(403);
+    header('Content-Type: text/html; charset=utf-8');
+    echo '<h1>403 — Requête refusée</h1><p>' .
+        htmlspecialchars($e->getMessage(), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') .
+        '</p>';
 } catch (RouterException $e) {
     echo $e->getMessage();
 } catch (RouteNotFoundException $e) {
