@@ -1,6 +1,8 @@
 name: Verify Web session and CSRF
 
 on:
+  push:
+    branches: [variant/web-session-csrf]
   pull_request:
     paths:
       - 'src/Controller/**'
