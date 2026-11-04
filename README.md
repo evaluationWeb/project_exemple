@@ -51,3 +51,8 @@ php tests/request_dto_mapping_test.php
 ## Middleware CSRF
 
 Les soumissions POST `/login` et `/register` sont protégées par `CsrfMiddleware` avant l'exécution du contrôleur ; les formulaires GET restent accessibles. L'implémentation et les tests sont décrits dans [docs/csrf-middleware.md](docs/csrf-middleware.md).
+
+
+## JWT API authentication
+
+`POST /api/login` consumes JSON credentials and returns a 15-minute HS256 access token; `GET /api/profile` requires `Authorization: Bearer <token>` and `ROLE_USER`. Session-based web login and CSRF remain unchanged. Set `JWT_SECRET` (at least 32 unpredictable bytes), optionally `JWT_ISSUER` and `JWT_AUDIENCE` in the local `.env`. Never commit a secret. See [docs/jwt-api.md](docs/jwt-api.md).
