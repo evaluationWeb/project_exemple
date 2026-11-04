@@ -60,7 +60,7 @@ $router->setGrantChecker(
     directory: dirname(__DIR__) . '/src/Controller',
     namespace: 'App\\Controller'
 );
-//Dispatch des routes
+// Dispatch des routes
 try {
     $router->dispatch();
 } catch (InvalidCsrfTokenException $e) {
@@ -69,12 +69,14 @@ try {
     echo '<h1>403 — Requête refusée</h1><p>' .
         htmlspecialchars($e->getMessage(), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') .
         '</p>';
-} catch (RouterException $e) {
-    echo $e->getMessage();
-} catch (RouteNotFoundException $e) {
-    echo $e->getMessage();
 } catch (UnauthorizedException $e) {
     http_response_code(403);
     header('Content-Type: text/html; charset=utf-8');
+    echo htmlspecialchars($e->getMessage(), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+} catch (RouteNotFoundException $e) {
+    http_response_code(404);
+    echo htmlspecialchars($e->getMessage(), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+} catch (RouterException $e) {
+    http_response_code($e->getCode() >= 400 && $e->getCode() <= 599 ? $e->getCode() : 500);
     echo htmlspecialchars($e->getMessage(), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 }
