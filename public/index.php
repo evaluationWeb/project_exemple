@@ -75,11 +75,6 @@ try {
     echo $e->getMessage();
 } catch (UnauthorizedException $e) {
     http_response_code(403);
-    // API access denies are JSON; existing HTML route behavior remains a text message.
-    if (str_starts_with(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/', '/api/')) {
-        header('Content-Type: application/json; charset=utf-8');
-        echo json_encode(['error' => 'Forbidden']);
-    } else {
-        echo $e->getMessage();
-    }
+    header('Content-Type: text/html; charset=utf-8');
+    echo htmlspecialchars($e->getMessage(), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 }
