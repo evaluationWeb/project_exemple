@@ -1,6 +1,6 @@
 # Authentification JWT (POC)
 
-Cette évolution concerne **project_exemple** : `router-librairie` conserve ses middlewares génériques et ses grants. Le site Web continue d'utiliser les sessions PHP et la protection CSRF.
+Cette évolution concerne **project_exemple** : `router-librairie` conserve ses middlewares génériques et ses grants. Cette branche ne fournit aucune interface Web ni session PHP.
 
 ## Configuration
 
@@ -27,7 +27,7 @@ curl http://localhost/api/profile \
   -H 'Authorization: Bearer VOTRE_TOKEN'
 ```
 
-- `POST /api/login` retourne `access_token`, `token_type` et `expires_in`. La validation des identifiants réutilise `LoginService`; aucune identité de session Web n'est créée par cet endpoint (le front-controller démarre encore la session PHP globalement).
+- `POST /api/login` retourne `access_token`, `token_type` et `expires_in`. La validation des identifiants réutilise `LoginService`; aucune identité de session Web n'est créée par cet endpoint (la branche API ne démarre pas de session PHP).
 - `GET /api/profile` exige un JWT valide et `ROLE_USER`.
 - Erreurs : 401 pour JWT manquant/invalide et login échoué, 403 pour droits insuffisants.
 
@@ -36,7 +36,7 @@ curl http://localhost/api/profile \
 - `JwtTokenManager` : émission, vérification cryptographique, claims obligatoires et durée de vie.
 - `JwtMiddleware` : lecture du Bearer et authentification.
 - `AuthenticationContext` : identité JWT durant le dispatch, réinitialisée en entrée/sortie par `RequestAuthenticationMiddleware`.
-- `ContextGrantChecker` : utilise l'identité JWT vérifiée ou, pour les routes Web, les grants déjà présents en session PHP, avec la sémantique existante d'`ArrayGrantChecker`.
+- `ContextGrantChecker` : utilise l'identité JWT vérifiée ou, avec la sémantique existante d'`ArrayGrantChecker`.
 - `AuthController` et `ProfileController` : logique HTTP / JSON.
 
 **Limite volontaire du POC :** aucun refresh token, aucune révocation. Ne pas envoyer un JWT dans un cookie. Une route API doit déclarer explicitement `JwtMiddleware` si elle doit être protégée : elle ne doit pas s'appuyer sur les cookies de session Web. Avant de mettre en production, évaluer rotation des clés, révocation, CORS, rate limiting des connexions, stockage côté client et déploiement en HTTPS.
@@ -46,5 +46,4 @@ curl http://localhost/api/profile \
 ```bash
 php tests/jwt_authentication_test.php
 php tests/jwt_api_routes_test.php
-php tests/csrf_middleware_test.php
 ```
