@@ -27,7 +27,7 @@ curl http://localhost/api/profile \
   -H 'Authorization: Bearer VOTRE_TOKEN'
 ```
 
-- `POST /api/login` retourne `access_token`, `token_type` et `expires_in`. La validation des identifiants réutilise `LoginService`; aucune session n'est créée.
+- `POST /api/login` retourne `access_token`, `token_type` et `expires_in`. La validation des identifiants réutilise `LoginService`; aucune identité de session Web n'est créée par cet endpoint (le front-controller démarre encore la session PHP globalement).
 - `GET /api/profile` exige un JWT valide et `ROLE_USER`.
 - Erreurs : 401 pour JWT manquant/invalide et login échoué, 403 pour droits insuffisants.
 
