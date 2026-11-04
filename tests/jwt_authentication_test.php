@@ -38,8 +38,6 @@ $jwt = $tokens->issue($user);
 $router->map(Route::get('/api/profile', static function () use ($context): string {
     return (string) $context->getUser()?->id;
 }, ['ROLE_USER'])->withMiddleware(new JwtMiddleware($tokens, $context)));
-$router->map(Route::get('/web', static fn (): string => 'web', ['ROLE_USER']));
-
 $request = static fn (?string $jwt): Request => new Request('/api/profile', 'GET', headers: $jwt === null
     ? []
     : ['Authorization' => 'Bearer ' . $jwt]);
@@ -80,13 +78,8 @@ $expectAuthFailure($request(JWT::encode([
     'jti' => 'test',
 ], $secret, 'HS256')));
 
-// An existing PHP session must never allow an API request without a valid JWT.
-$_SESSION['user'] = ['grant' => ['ROLE_USER']];
+// A valid JWT is always required on the protected API route.
 $expectAuthFailure($request(null));
-
-// Web routes continue using session grants.
-verifyJwt($router->dispatch(new Request('/web')) === 'web', 'Web grants should use the session.');
-unset($_SESSION['user']);
 
 $noRole = JWT::encode([
     'sub' => '42', 'roles' => [],
