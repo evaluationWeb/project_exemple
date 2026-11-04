@@ -1,58 +1,37 @@
-# project_exemple
-Projet PHP POO d'exemple d'intégration des 3 librairies `evaluationWeb/routing`, `evaluationWeb/validation` et `mithridatem/autowiring`  
+# project_exemple — variante API JWT
 
-**Prés requis** : 
-```
-PHP 8.2 +
-Composer 2.5 +
-Mysql
-```
+Branche pédagogique **API REST uniquement** : aucun rendu de template HTML, aucune authentification par session PHP et aucune protection CSRF basée sur cookies.
 
-## 1 récupération du projet
-```sh
-git clone https://github.com/evaluationWeb/project_exemple.git
-```
+## Installation
 
-## 2 Créer ou éditer le fichier `.env` avec vos informations
-```dotenv
-DATABASE_HOST=localhost
-DATABASE_PORT=3306
-DATABASE_NAME=library_project
-DATABASE_USERNAME=
-DATABASE_PASSWORD=
-```
-
-## 3 Créer la base de données avec le script db.sql
-
-## 4 installer les dépendances :
-```sh
+```bash
+git switch variant/api-jwt
 composer install
-```
-
-## 5 démarrer le projet :
-```sh
 php -S 127.0.0.1:8000 -t public
 ```
 
-## Requêtes HTTP et DTO (router ^1.4)
+Configurer `.env` pour MySQL (script `db.sql`) et les paramètres suivants :
 
-Les actions POST de `RegisterController` et `LoginController` utilisent
-`ParameterCollectionRequestInterface::allPost()` pour construire les DTO via
-`fromArray()`. La validation CSRF précède toujours l'appel du service.
-Les services reçoivent uniquement les DTO et restent indépendants de HTTP.
-Le corps brut JSON reste accessible séparément avec `getContent()`.
-
-Test de correspondance des paramètres et DTO :
-```sh
-php tests/request_dto_mapping_test.php
+```dotenv
+JWT_SECRET=remplacer-par-une-cle-aleatoire-d-au-moins-32-octets
+JWT_ISSUER=project-exemple
+JWT_AUDIENCE=project-exemple-api
 ```
 
+Générer une clé : `php -r "echo bin2hex(random_bytes(32)), PHP_EOL;"` ; ne jamais publier le secret. L'API doit être déployée en HTTPS.
 
-## Middleware CSRF
+## Endpoints
 
-Les soumissions POST `/login` et `/register` sont protégées par `CsrfMiddleware` avant l'exécution du contrôleur ; les formulaires GET restent accessibles. L'implémentation et les tests sont décrits dans [docs/csrf-middleware.md](docs/csrf-middleware.md).
+- `POST /api/login` : body JSON `{"email":"...","password":"..."}`, renvoie un token Bearer (15 min).
+- `GET /api/profile` : header `Authorization: Bearer ...`, `grants: ['ROLE_USER']`.
+- 401 si absence ou invalidité du JWT, 403 si droits insuffisants.
 
+## Tests
 
-## JWT API authentication
+```bash
+php tests/jwt_authentication_test.php
+php tests/jwt_api_routes_test.php
+php tests/login_input_test.php
+```
 
-`POST /api/login` consumes JSON credentials and returns a 15-minute HS256 access token; `GET /api/profile` requires `Authorization: Bearer <token>` and `ROLE_USER`. Session-based web login and CSRF remain unchanged. Set `JWT_SECRET` (at least 32 unpredictable bytes), optionally `JWT_ISSUER` and `JWT_AUDIENCE` in the local `.env`. Never commit a secret. See [docs/jwt-api.md](docs/jwt-api.md).
+Consulter `docs/jwt-api.md`. La branche `main` conserve l'exemple complet avec la version Web.
