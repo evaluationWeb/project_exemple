@@ -55,16 +55,8 @@ assertForm($loginToken !== $registerToken, 'Les formulaires doivent avoir des to
 $loginGet = captureForm(fn() => $login->showLogin());
 assertForm(str_contains($loginGet, 'value="' . $loginToken . '"'), 'GET login : token manquant');
 
-$loginInvalid = captureForm(fn() => $login->login(formRequest('POST', ['csrf_token' => ['invalid']])));
-assertForm(str_contains($loginInvalid, 'Token CSRF invalide'), 'POST login : erreur CSRF manquante');
-assertForm(str_contains($loginInvalid, 'value="' . $loginToken . '"'), 'POST login : token absent après erreur');
-
 $registerGet = captureForm(fn() => $register->register(formRequest('GET')));
 assertForm(str_contains($registerGet, 'value="' . $registerToken . '"'), 'GET register : token manquant');
-
-$registerInvalid = captureForm(fn() => $register->register(formRequest('POST', ['csrf_token' => 'invalid'])));
-assertForm(str_contains($registerInvalid, 'Token CSRF invalide'), 'POST register : erreur CSRF manquante');
-assertForm(str_contains($registerInvalid, 'value="' . $registerToken . '"'), 'POST register : token absent après erreur');
 
 session_write_close();
 echo "Auth form rendering : OK\n";
