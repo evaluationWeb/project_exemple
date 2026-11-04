@@ -5,8 +5,12 @@ on:
     paths:
       - 'src/Controller/**'
       - 'src/Security/CsrfTokenManager.php'
+      - 'src/Middleware/**'
       - 'template/template_register.php'
       - 'tests/csrf_token_manager_test.php'
+      - 'tests/csrf_middleware_test.php'
+      - 'tests/csrf_route_configuration_test.php'
+      - 'public/index.php'
       - 'tests/form_submission_test.php'
       - 'tests/auth_form_render_test.php'
       - 'tests/request_dto_mapping_test.php'
@@ -28,6 +32,12 @@ jobs:
         run: composer install --no-interaction --prefer-dist
       - name: Check PHP syntax
         run: |
+          php -l src/Middleware/CsrfMiddleware.php
+          php -l src/Middleware/InvalidCsrfTokenException.php
+          php -l src/Middleware/ContainerMiddlewareResolver.php
+          php -l public/index.php
+          php -l tests/csrf_middleware_test.php
+          php -l tests/csrf_route_configuration_test.php
           php -l src/Controller/AbstractController.php
           php -l src/Security/CsrfTokenManager.php
           php -l src/Controller/LoginController.php
@@ -40,6 +50,8 @@ jobs:
       - name: Run focused tests
         run: |
           php tests/csrf_token_manager_test.php
+          php tests/csrf_middleware_test.php
+          php tests/csrf_route_configuration_test.php
           php tests/form_submission_test.php
           php tests/auth_form_render_test.php
           php tests/request_dto_mapping_test.php
