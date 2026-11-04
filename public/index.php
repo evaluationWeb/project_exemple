@@ -5,12 +5,9 @@ declare(strict_types=1);
 require dirname(__DIR__) . '/vendor/autoload.php';
 
 use App\Middleware\ContainerMiddlewareResolver;
-use App\Middleware\RequestAuthenticationMiddleware;
-use App\Security\Authentication\AuthenticationContext;
-use App\Security\Authentication\ContextGrantChecker;
-use App\Security\Jwt\InvalidJwtException;
 use App\Middleware\InvalidCsrfTokenException;
 use Mithridatem\Autowiring\Container;
+use Mithridatem\Routing\Auth\ArrayGrantChecker;
 use Mithridatem\Autowiring\Bridge\Routing\ContainerControllerResolver;
 use Mithridatem\Routing\Exception\RouterException;
 use Mithridatem\Routing\Exception\RouteNotFoundException;
@@ -51,13 +48,10 @@ $router->setControllerResolver(
     new ContainerControllerResolver($container)
 );
 $router->setMiddlewareResolver(new ContainerMiddlewareResolver($container));
-// A new container is constructed for each PHP-FPM request; the global middleware
-// additionally resets its context for repeated dispatches in the same process.
-$router->addMiddleware($container->get(RequestAuthenticationMiddleware::class));
 
 // Conserver ici les éventuels réglages de basePath et d'autorisations.
 $router->setGrantChecker(
-    $container->get(ContextGrantChecker::class)
+    new ArrayGrantChecker($_SESSION['user']['grant'] ?? [])
 );
 
 // Charger les routes déclarées dans les contrôleurs avec #[Route].
@@ -69,12 +63,6 @@ $router->setGrantChecker(
 //Dispatch des routes
 try {
     $router->dispatch();
-} catch (InvalidJwtException $e) {
-    http_response_code(401);
-    header('Content-Type: application/json; charset=utf-8');
-    header('Cache-Control: no-store');
-    header('WWW-Authenticate: Bearer');
-    echo json_encode(['error' => 'Unauthorized']);
 } catch (InvalidCsrfTokenException $e) {
     http_response_code(403);
     header('Content-Type: text/html; charset=utf-8');
