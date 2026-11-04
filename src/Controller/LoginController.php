@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\DTO\LoginInput;
+use App\Middleware\CsrfMiddleware;
 use App\Security\CsrfTokenManager;
 use App\Security\UserSessionManager;
 use App\Service\LoginService;
@@ -25,29 +26,15 @@ final class LoginController extends AbstractController
         return $this->renderLoginForm();
     }
 
-    #[Route(path: '/login', method: 'POST', grants: [])]
+    #[Route(path: '/login', method: 'POST', grants: [], middleware: [CsrfMiddleware::class])]
     public function login(ParameterCollectionRequestInterface $request): mixed
     {
-        $result = [];
+        $input = LoginInput::fromArray($request->allPost());
+        $result = $this->loginService->login($input);
 
-        $isCsrfValid = $this->csrf->isValid(
-            'login',
-            $request->post('csrf_token')
-        );
-
-        if (!$isCsrfValid) {
-            $result = ['errors' => 'Token CSRF invalide'];
-        }
-
-        if ($isCsrfValid) {
-            $input = LoginInput::fromArray($request->allPost());
-
-            $result = $this->loginService->login($input);
-
-            if (isset($result['user'])) {
-                $this->session->login($result['user']);
-                $this->redirect('/');
-            }
+        if (isset($result['user'])) {
+            $this->session->login($result['user']);
+            $this->redirect('/');
         }
 
         return $this->renderLoginForm($result);
