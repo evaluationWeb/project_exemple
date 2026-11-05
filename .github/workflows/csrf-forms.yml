@@ -1,4 +1,4 @@
-name: Verify stateless JWT API
+name: Verify stateless JWT API and bootstrap
 
 on:
   push:
