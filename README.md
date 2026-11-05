@@ -1,58 +1,61 @@
-# project_exemple
-Projet PHP POO d'exemple d'intégration des 3 librairies `evaluationWeb/routing`, `evaluationWeb/validation` et `mithridatem/autowiring`  
+# project_exemple — application Web (main)
 
-**Prés requis** : 
-```
-PHP 8.2 +
-Composer 2.5 +
-Mysql
-```
+Base PHP MVC pédagogique et utilisable pour un projet Web classique : sessions PHP, protection CSRF par middleware, DTO, services, repositories, injection de dépendances et autorisations par `grants`.
 
-## 1 récupération du projet
-```sh
-git clone https://github.com/evaluationWeb/project_exemple.git
-```
+## Organisation des branches
 
-## 2 Créer ou éditer le fichier `.env` avec vos informations
-```dotenv
-DATABASE_HOST=localhost
-DATABASE_PORT=3306
-DATABASE_NAME=library_project
-DATABASE_USERNAME=
-DATABASE_PASSWORD=
-```
+| Branche | Usage |
+|---|---|
+| `main` | **Web uniquement**, sessions PHP et CSRF (cette version après fusion de la PR) |
+| `variant/api-jwt` | API REST JSON, authentification Firebase JWT et grants |
+| `archive/web-api-combined-2026-11-05` | Archive de l'ancien POC mixte Web + API |
+| `variant/web-session-csrf` | Variante Web antérieure, conservée à titre de référence |
 
-## 3 Créer la base de données avec le script db.sql
+Le code de la librairie `mithridatem/router` n'est pas modifié par cette organisation.
 
-## 4 installer les dépendances :
+## Installation et exécution
+
 ```sh
 composer install
-```
-
-## 5 démarrer le projet :
-```sh
+# Renseigner votre .env avec DATABASE_HOST, DATABASE_PORT, DATABASE_NAME,
+# DATABASE_USERNAME, DATABASE_PASSWORD et UPLOAD_DIRECTORY
+# Importer db.sql dans MySQL/MariaDB
 php -S 127.0.0.1:8000 -t public
 ```
 
-## Requêtes HTTP et DTO (router ^1.4)
+Endpoints Web : `/`, `/login` (GET/POST), `/register` (GET/POST).
 
-Les actions POST de `RegisterController` et `LoginController` utilisent
-`ParameterCollectionRequestInterface::allPost()` pour construire les DTO via
-`fromArray()`. La validation CSRF précède toujours l'appel du service.
-Les services reçoivent uniquement les DTO et restent indépendants de HTTP.
-Le corps brut JSON reste accessible séparément avec `getContent()`.
+## Un front controller simple
 
-Test de correspondance des paramètres et DTO :
-```sh
-php tests/request_dto_mapping_test.php
+```php
+require dirname(__DIR__) . '/vendor/autoload.php';
+(new App\Kernel\Application(dirname(__DIR__)))->run();
 ```
 
+- `src/Kernel/Application.php` : coordination uniquement (bootstrap, conteneur, routeur et dispatch).
+- `src/Kernel/WebBootstrap.php` : variables d'environnement, en-têtes de sécurité et session PHP.
+- `src/Kernel/RouterFactory.php` : résolution des contrôleurs, middlewares, grants de session et chargement des routes Attributes.
+- `src/Kernel/WebErrorHandler.php` : codes HTTP et sortie HTML échappée, sans exposer les erreurs internes.
+- `config/service.php` : déclaration des services (PDO, configuration de l'upload) via `Container::load()`.
+- `src/Middleware/CsrfMiddleware.php` : contrôle des tokens sur les POST de connexion/inscription.
 
-## Middleware CSRF
+Ces objets restent **dans l'application** : le conteneur d'autowiring ne connaît ni HTTP, ni routing, ni session. Aucun nouveau framework ni API publique de librairie n'est introduit.
 
-Les soumissions POST `/login` et `/register` sont protégées par `CsrfMiddleware` avant l'exécution du contrôleur ; les formulaires GET restent accessibles. L'implémentation et les tests sont décrits dans [docs/csrf-middleware.md](docs/csrf-middleware.md).
+## Tests
 
+```sh
+php tests/web_kernel_test.php
+php tests/csrf_token_manager_test.php
+php tests/csrf_middleware_test.php
+php tests/csrf_route_configuration_test.php
+php tests/auth_form_render_test.php
+php tests/form_submission_test.php
+php tests/request_dto_mapping_test.php
+php tests/login_input_test.php
+php tests/register_user_input_test.php
+php tests/user_session_manager_test.php
+```
 
-## JWT API authentication
+La CI exécute les tests statiques et fonctionnels du bootstrap et des formulaires. Vérifier ensuite manuellement le parcours HTML contre une base SQL locale : inscription, authentification, grants et protection CSRF.
 
-`POST /api/login` consumes JSON credentials and returns a 15-minute HS256 access token; `GET /api/profile` requires `Authorization: Bearer <token>` and `ROLE_USER`. Session-based web login and CSRF remain unchanged. Set `JWT_SECRET` (at least 32 unpredictable bytes), optionally `JWT_ISSUER` and `JWT_AUDIENCE` in the local `.env`. Never commit a secret. See [docs/jwt-api.md](docs/jwt-api.md).
+Voir aussi `docs/csrf-middleware.md`.

@@ -10,7 +10,6 @@
         "mithridatem/autowiring": "^1.2",
         "mithridatem/validation": "^1.2",
         "vlucas/phpdotenv": "^5.7",
-        "symfony/var-dumper": "*",
-        "firebase/php-jwt": "^7.2"
+        "symfony/var-dumper": "*"
     }
 }
