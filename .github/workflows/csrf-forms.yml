@@ -2,18 +2,18 @@ name: Verify Web session and CSRF
 
 on:
   push:
-    branches: [variant/web-session-csrf]
+    branches: [main, variant/web-session-csrf]
   pull_request:
     paths:
+      - 'src/Kernel/**'
       - 'src/Controller/**'
       - 'src/Security/**'
       - 'src/Middleware/**'
       - 'template/template_register.php'
       - 'tests/csrf_token_manager_test.php'
       - 'tests/csrf_middleware_test.php'
-      - 'tests/jwt_authentication_test.php'
-      - 'tests/jwt_api_routes_test.php'
       - 'tests/csrf_route_configuration_test.php'
+      - 'tests/web_kernel_test.php'
       - 'public/index.php'
       - 'tests/form_submission_test.php'
       - 'tests/auth_form_render_test.php'
@@ -37,6 +37,11 @@ jobs:
         run: composer install --no-interaction --prefer-dist
       - name: Check PHP syntax
         run: |
+          php -l src/Kernel/Application.php
+          php -l src/Kernel/WebBootstrap.php
+          php -l src/Kernel/RouterFactory.php
+          php -l src/Kernel/WebErrorHandler.php
+          php -l tests/web_kernel_test.php
           php -l src/Middleware/CsrfMiddleware.php
           php -l src/Middleware/InvalidCsrfTokenException.php
           php -l src/Middleware/ContainerMiddlewareResolver.php
@@ -54,6 +59,7 @@ jobs:
           php -l tests/request_dto_mapping_test.php
       - name: Run focused tests
         run: |
+          php tests/web_kernel_test.php
           php tests/csrf_token_manager_test.php
           php tests/csrf_middleware_test.php
           php tests/csrf_route_configuration_test.php
