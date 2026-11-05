@@ -34,4 +34,22 @@ php tests/jwt_api_routes_test.php
 php tests/login_input_test.php
 ```
 
-Consulter `docs/jwt-api.md`. La branche `main` conserve l'exemple complet avec la version Web.
+## Démarrage de l'API
+
+Le front controller `public/index.php` se limite à :
+
+```php
+require dirname(__DIR__) . '/vendor/autoload.php';
+(new App\\Kernel\\Application(dirname(__DIR__)))->run();
+```
+
+- `src/Kernel/ApiBootstrap.php` charge l'environnement et configure les en-têtes JSON.
+- `src/Kernel/Application.php` orchestre la création du conteneur, du routeur et son exécution.
+- `src/Kernel/RouterFactory.php` configure la résolution des contrôleurs et middlewares, l'initialisation du contexte d'authentification, les grants et la découverte des routes.
+- `src/Kernel/ApiErrorHandler.php` traduit les exceptions en réponses JSON 401 / 403 / 404 / 405 / 500, sans exposer les détails internes.
+
+**Aucune session PHP n'est démarrée** et aucun mécanisme de cookie n'est utilisé pour authentifier les appels API. Le conteneur d'autowiring et la librairie de routing restent indépendants de ce bootstrap applicatif.
+
+Consulter `docs/jwt-api.md` pour les mécanismes et limites de sécurité. La branche `main` est dédiée au Web session + CSRF ; l'ancien POC mixte reste disponible dans `archive/web-api-combined-2026-11-05`.
+
+Le nouveau test `php tests/api_kernel_test.php` vérifie la configuration de la factory et les réponses d'erreur JSON.
