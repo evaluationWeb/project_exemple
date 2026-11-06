@@ -28,7 +28,7 @@ final class LoginController extends AbstractController
         return $this->renderLoginForm();
     }
 
-    #[Route(path: '/', method: 'POST', grants: [], middleware: [CsrfMiddleware::class])]
+    #[Route(path: '/', method: 'POST', grants: ['IS_GUEST'], middleware: [CsrfMiddleware::class])]
     public function login(ParameterCollectionRequestInterface $request): mixed
     {
         $input = LoginInput::fromArray($request->allPost());
