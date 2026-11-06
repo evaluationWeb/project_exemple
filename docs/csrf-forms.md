@@ -3,7 +3,7 @@
 ## Décisions pédagogiques
 
 - `AbstractController::isFormSubmitted(RequestInterface)` teste exclusivement la méthode HTTP `POST`, sans dépendance à un champ `submit`.
-- `CsrfTokenManager` reste dans `App\Security` et vérifie un token propre à chaque formulaire.
+- `CsrfTokenManager` reste dans `App\Security` et vérifie un token lié au chemin public de soumission du formulaire (par exemple `/login` ou `/register`).
 - `LoginController` et `RegisterController` transmettent un token CSRF à leurs vues lors de **chaque rendu**, même après une erreur.
 - Le contrôle CSRF est fait avant l'appel au service applicatif. La validation des données reste dans les DTO/services.
 
