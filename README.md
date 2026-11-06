@@ -22,7 +22,7 @@ Générer une clé : `php -r "echo bin2hex(random_bytes(32)), PHP_EOL;"` ; ne ja
 
 ## Endpoints
 
-- `POST /api/login` : body JSON `{"email":"...","password":"..."}`, renvoie un token Bearer (durée configurée via `TTL_SECONDS`).
+- `POST /api/login` : body JSON `{"email":"...","password":"..."}`, renvoie un token Bearer (durée configurée via `JWT_TTL_SECONDS`).
 - `GET /api/profile` : header `Authorization: Bearer ...`, exige `ROLE_USER` et le middleware JWT hérités du groupe de routes.
 - 401 si absence ou invalidité du JWT, 403 si droits insuffisants.
 
