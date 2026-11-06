@@ -7,12 +7,14 @@ namespace App\Controller\Api;
 use App\Middleware\JwtMiddleware;
 use App\Security\Authentication\AuthenticationContext;
 use Mithridatem\Routing\Attribute\Route;
+use Mithridatem\Routing\Attribute\RouteGroup;
 
+#[RouteGroup(prefix: '/api', grants: ['ROLE_USER'], middleware: [JwtMiddleware::class])]
 final class ProfileController
 {
     public function __construct(private AuthenticationContext $context) {}
 
-    #[Route(path: '/api/profile', method: 'GET', grants: ['ROLE_USER'], middleware: [JwtMiddleware::class])]
+    #[Route(path: '/profile', method: 'GET')]
     public function profile(): void
     {
         $user = $this->context->getUser();
