@@ -4,10 +4,10 @@ Cette application utilise le pipeline générique de `mithridatem/router`. Le ro
 
 ## Répartition des responsabilités
 
-- `App\\Security\\CsrfTokenManager` génère et vérifie des tokens stockés en session, associés à un identifiant serveur.
-- `App\\Middleware\\CsrfMiddleware` vérifie le token reçu dans `csrf_token` **avant** le contrôleur, uniquement sur les routes POST protégées.
-- `App\\Middleware\\ContainerMiddlewareResolver` permet l'injection des dépendances du middleware.
-- `App\\Middleware\\InvalidCsrfTokenException` signale un refus ; `public/index.php` renvoie HTTP 403.
+- `App\Security\CsrfTokenManager` génère et vérifie des tokens stockés en session, associés à un identifiant serveur.
+- `App\Middleware\CsrfMiddleware` vérifie le token reçu dans `csrf_token` **avant** le contrôleur, uniquement sur les routes POST protégées.
+- `App\Middleware\ContainerMiddlewareResolver` permet l'injection des dépendances du middleware.
+- `App\Middleware\InvalidCsrfTokenException` signale un refus ; `public/index.php` renvoie HTTP 403.
 
 ## Convention : l'identifiant CSRF est le chemin de soumission
 
