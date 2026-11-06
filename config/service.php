@@ -11,6 +11,7 @@ return static function (Container $container): void {
         'secret' => $_ENV['JWT_SECRET'] ?? '',
         'issuer' => $_ENV['JWT_ISSUER'] ?? 'project-exemple',
         'audience' => $_ENV['JWT_AUDIENCE'] ?? 'project-exemple-api',
+        'ttl' => $_ENV['JWT_TTL_SECONDS'] ?? 900,
     ]);
 
     // Connexion créée au premier besoin, puis partagée.

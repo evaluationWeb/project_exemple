@@ -12,12 +12,13 @@ use Throwable;
 
 final class JwtTokenManager
 {
-    private const TTL_SECONDS = 900;
+    //private const int TTL_SECONDS = 900;
 
     public function __construct(
         private string $secret,
         private string $issuer,
-        private string $audience
+        private string $audience,
+        private int $ttl
     ) {
         if (strlen($secret) < 32 || $issuer === '' || $audience === '') {
             throw new \LogicException('JWT configuration missing: define a random JWT_SECRET (32+ bytes), JWT_ISSUER and JWT_AUDIENCE.');
@@ -39,7 +40,7 @@ final class JwtTokenManager
             'sub' => (string) $id,
             'iat' => $now,
             'nbf' => $now,
-            'exp' => $now + self::TTL_SECONDS,
+            'exp' => $now + $this->ttl,
             'jti' => bin2hex(random_bytes(16)),
             'email' => $email,
             'roles' => self::parseRoles($user->getGrant()),
@@ -70,7 +71,7 @@ final class JwtTokenManager
             || !is_int($claims['iat']) || !is_int($claims['nbf']) || !is_int($claims['exp'])
             || $claims['iat'] > $now || $claims['nbf'] > $now
             || $claims['exp'] <= $now || $claims['exp'] <= $claims['iat']
-            || $claims['exp'] - $claims['iat'] > self::TTL_SECONDS
+            || $claims['exp'] - $claims['iat'] > $this->ttl
             || !isset($claims['roles']) || !is_array($claims['roles'])
         ) {
             throw new InvalidJwtException('Invalid bearer token claims.');
@@ -88,7 +89,7 @@ final class JwtTokenManager
 
     public function expiresIn(): int
     {
-        return self::TTL_SECONDS;
+        return $this->ttl;
     }
 
     /** @return list<string> */
