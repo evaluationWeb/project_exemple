@@ -16,6 +16,7 @@ Configurer `.env` pour MySQL (script `db.sql`) et les paramètres suivants :
 JWT_SECRET=remplacer-par-une-cle-aleatoire-d-au-moins-32-octets
 JWT_ISSUER=project-exemple
 JWT_AUDIENCE=project-exemple-api
+JWT_TTL_SECONDS=900
 ```
 
 Générer une clé : `php -r "echo bin2hex(random_bytes(32)), PHP_EOL;"` ; ne jamais publier le secret. L'API doit être déployée en HTTPS.
