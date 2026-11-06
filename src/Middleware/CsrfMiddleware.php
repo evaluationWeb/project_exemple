@@ -12,16 +12,11 @@ use Mithridatem\Routing\Middleware\MiddlewareInterface;
 /**
  * Protects explicitly configured form routes against CSRF.
  *
- * The form identifier is derived from a fixed, application-controlled route
- * mapping; it is never accepted from an untrusted HTTP field.
+ * The form identifier is the requested path, not a client-provided form ID.
+ * Controllers must generate tokens using the same POST action path.
  */
 final class CsrfMiddleware implements MiddlewareInterface
 {
-    private const FORMS = [
-        '/login' => 'login',
-        '/register' => 'register',
-    ];
-
     public function __construct(private CsrfTokenManager $tokens) {}
 
     public function process(RequestContextInterface $context, callable $next): mixed
@@ -34,10 +29,7 @@ final class CsrfMiddleware implements MiddlewareInterface
             throw new \LogicException('CsrfMiddleware is intended for POST routes only.');
         }
 
-        $formId = self::FORMS[$context->getPath()] ?? null;
-        if ($formId === null) {
-            throw new \LogicException('No CSRF form identifier configured for this route.');
-        }
+        $formId = $context->getPath();
 
         if (!$this->tokens->isValid($formId, $context->post('csrf_token'))) {
             throw new InvalidCsrfTokenException('Token CSRF invalide');
