@@ -32,4 +32,6 @@ php tests/register_user_input_test.php
 php tests/user_session_manager_test.php
 ```
 
-La branche `main` conserve l'exemple complet incluant également l'API JWT. Voir `docs/csrf-middleware.md`.
+Pour protéger un nouveau formulaire, appliquez `CsrfMiddleware` uniquement à la route POST et générez le token avec le chemin de soumission correspondant. Aucun registre de formulaires n'est à maintenir. Consultez `docs/csrf-middleware.md` pour les exemples et les limites.
+
+La branche `main` conserve l'exemple complet incluant également l'API JWT.
