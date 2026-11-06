@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Kernel;
 
-use Dotenv\Dotenv;
-
 /**
  * Web-only startup: environment, security headers and PHP session.
  * The JWT API variant intentionally does not use this class.
@@ -14,7 +12,7 @@ final class WebBootstrap
 {
     public function boot(string $rootPath): void
     {
-        Dotenv::createImmutable($rootPath)->safeLoad();
+        (new EnvironmentLoader())->load($rootPath);
 
         header('X-Frame-Options: DENY');
         header('X-Content-Type-Options: nosniff');

@@ -2,6 +2,19 @@
 
 Branche pédagogique **Web HTTP classique uniquement**. Authentification par session PHP, gestion des rôles avec `grants`, protection CSRF par middleware sur les formulaires HTML. Aucun endpoint JWT/API.
 
+
+## Configuration des environnements
+
+- **Développement** : copier `.env.example` vers `.env`, puis renseigner ses propres valeurs ; `APP_ENV=dev` par défaut.
+- **Tests** : définir `APP_ENV=test` dans le processus pour charger `.env.test` (facultatif).
+- **Production** : définir `APP_ENV=prod` et injecter les variables/secrets via le serveur ou le conteneur. Aucun fichier `.env.prod` ni `.env` n'est lu.
+
+Les fichiers `.env` et `.env.*` sont ignorés par Git (sauf `.env.example`). Le fichier `.env` précédemment suivi par Git a été retiré du dépôt, sans effacer son historique : toute valeur sensible déjà publiée doit être renouvelée. Voir [guide des environnements](docs/environments.md).
+
+```bash
+php tests/environment_loader_test.php
+```
+
 ## Installation
 
 ```bash
@@ -10,14 +23,14 @@ composer install
 php -S 127.0.0.1:8000 -t public
 ```
 
-Configurez la base MySQL avec `db.sql` et vos variables `DATABASE_*` dans un fichier `.env` local.
+Configurez la base MySQL avec `db.sql` et vos variables `DATABASE_*` dans un fichier `.env` local, créé à partir de `.env.example`.
 
 ## Architecture du point d'entrée
 
 Le front controller `public/index.php` délègue désormais le démarrage à `App\Kernel\Application`. Le noyau Web reste volontairement léger :
 
 - `src/Kernel/Application.php` orchestre le bootstrap, la configuration du conteneur, la création du routeur et le dispatch.
-- `src/Kernel/WebBootstrap.php` charge `.env`, configure les en-têtes de sécurité et démarre la session PHP.
+- `src/Kernel/WebBootstrap.php` sélectionne la configuration selon `APP_ENV`, puis configure les en-têtes de sécurité et démarre la session PHP.
 - `src/Kernel/RouterFactory.php` compose le routeur, l'autowiring, les grants de session et charge les attributs `#[Route]` / `#[RouteGroup]`.
 - `src/Kernel/WebErrorHandler.php` traduit les exceptions en réponses HTML et codes HTTP adaptés, sans exposer les erreurs internes.
 
