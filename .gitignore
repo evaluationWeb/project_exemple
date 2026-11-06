@@ -1,3 +1,7 @@
 vendor/
-.env.prod
 composer.lock
+
+# Local secrets and environment-specific configuration
+.env
+.env.*
+!.env.example

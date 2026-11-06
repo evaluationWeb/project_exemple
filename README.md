@@ -2,6 +2,19 @@
 
 Branche pédagogique **API REST uniquement** : aucun rendu de template HTML, aucune authentification par session PHP et aucune protection CSRF basée sur cookies.
 
+
+## Configuration des environnements
+
+- **Développement** : copier `.env.example` vers `.env`, puis renseigner ses propres valeurs ; `APP_ENV=dev` par défaut.
+- **Tests** : définir `APP_ENV=test` dans le processus pour charger `.env.test` (facultatif).
+- **Production** : définir `APP_ENV=prod` et injecter les variables/secrets via le serveur ou le conteneur. Aucun fichier `.env.prod` ni `.env` n'est lu.
+
+Les fichiers `.env` et `.env.*` sont ignorés par Git (sauf `.env.example`). Le fichier `.env` précédemment suivi par Git a été retiré du dépôt, sans effacer son historique : toute valeur sensible déjà publiée doit être renouvelée. Voir [guide des environnements](docs/environments.md).
+
+```bash
+php tests/environment_loader_test.php
+```
+
 ## Installation
 
 ```bash
@@ -10,7 +23,7 @@ composer install
 php -S 127.0.0.1:8000 -t public
 ```
 
-Configurer `.env` pour MySQL (script `db.sql`) et les paramètres suivants :
+En développement, copier `.env.example` vers `.env`, puis configurer MySQL (`db.sql`) et les paramètres suivants :
 
 ```dotenv
 JWT_SECRET=remplacer-par-une-cle-aleatoire-d-au-moins-32-octets
