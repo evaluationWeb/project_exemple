@@ -10,8 +10,10 @@ use App\Security\CsrfTokenManager;
 use App\Security\UserSessionManager;
 use App\Service\LoginService;
 use Mithridatem\Routing\Attribute\Route;
+use Mithridatem\Routing\Attribute\RouteGroup;
 use Mithridatem\Routing\Http\ParameterCollectionRequestInterface;
 
+#[RouteGroup(prefix: '/login')]
 final class LoginController extends AbstractController
 {
     public function __construct(
@@ -20,13 +22,13 @@ final class LoginController extends AbstractController
         private CsrfTokenManager $csrf,
     ) {}
 
-    #[Route(path: '/login', method: 'GET', grants: [])]
+    #[Route(path: '/', method: 'GET', grants: [])]
     public function showLogin(): mixed
     {
         return $this->renderLoginForm();
     }
 
-    #[Route(path: '/login', method: 'POST', grants: [], middleware: [CsrfMiddleware::class])]
+    #[Route(path: '/', method: 'POST', grants: [], middleware: [CsrfMiddleware::class])]
     public function login(ParameterCollectionRequestInterface $request): mixed
     {
         $input = LoginInput::fromArray($request->allPost());
@@ -44,7 +46,7 @@ final class LoginController extends AbstractController
     {
         return $this->render('login', 'Connexion', [
             ...$data,
-            'csrf_token' => $this->csrf->generate('login'),
+            'csrf_token' => $this->csrf->generate('/login'),
         ]);
     }
 }
