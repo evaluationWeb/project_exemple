@@ -9,8 +9,10 @@ use App\Middleware\CsrfMiddleware;
 use App\Security\CsrfTokenManager;
 use App\Service\UserService;
 use Mithridatem\Routing\Attribute\Route;
+use Mithridatem\Routing\Attribute\RouteGroup;
 use Mithridatem\Routing\Http\ParameterCollectionRequestInterface;
 
+#[RouteGroup(prefix: '/register')]
 final class RegisterController extends AbstractController
 {
     public function __construct(
@@ -18,8 +20,8 @@ final class RegisterController extends AbstractController
         private CsrfTokenManager $csrf,
     ) {}
 
-    #[Route(path: '/register', method: 'GET', grants: [])]
-    #[Route(path: '/register', method: 'POST', grants: [], middleware: [CsrfMiddleware::class])]
+    #[Route(path: '/', method: 'GET', grants: [])]
+    #[Route(path: '/', method: 'POST', grants: [], middleware: [CsrfMiddleware::class])]
     public function register(ParameterCollectionRequestInterface $request): mixed
     {
         $result = [];
@@ -36,7 +38,7 @@ final class RegisterController extends AbstractController
     {
         return $this->render('register', 'Inscription', [
             ...$data,
-            'csrf_token' => $this->csrf->generate('register'),
+            'csrf_token' => $this->csrf->generate('/register'),
         ]);
     }
 }

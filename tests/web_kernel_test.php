@@ -12,6 +12,7 @@ use App\Middleware\InvalidCsrfTokenException;
 use Mithridatem\Autowiring\Container;
 use Mithridatem\Routing\Exception\RouteNotFoundException;
 use Mithridatem\Routing\Exception\UnauthorizedException;
+use Mithridatem\Routing\Group\GroupedRoute;
 
 function checkKernel(bool $ok, string $message): void
 {
@@ -28,6 +29,9 @@ foreach (['/login', '/register'] as $path) {
     $get = $router->getRoutes()->match('GET', $path);
     $post = $router->getRoutes()->match('POST', $path);
     checkKernel($get !== null && $post !== null, 'Missing web route: ' . $path);
+    checkKernel($get->getRoute() instanceof GroupedRoute, 'GET should use RouteGroup: ' . $path);
+    checkKernel($post->getRoute() instanceof GroupedRoute, 'POST should use RouteGroup: ' . $path);
+    checkKernel($get->getRoute()->getGrants() === [] && $post->getRoute()->getGrants() === [], 'Auth forms must remain public: ' . $path);
     checkKernel($get->getRoute()->getMiddleware() === [], 'CSRF must not be on GET: ' . $path);
     checkKernel($post->getRoute()->getMiddleware() === [CsrfMiddleware::class], 'CSRF missing on POST: ' . $path);
 }

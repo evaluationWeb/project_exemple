@@ -6,10 +6,10 @@ Base PHP MVC pédagogique et utilisable pour un projet Web classique : sessions 
 
 | Branche | Usage |
 |---|---|
-| `main` | **Web uniquement**, sessions PHP et CSRF (cette version après fusion de la PR) |
+| `main` | **Web de référence**, sessions PHP, CSRF générique et `RouteGroup` |
 | `variant/api-jwt` | API REST JSON, authentification Firebase JWT et grants |
 | `archive/web-api-combined-2026-11-05` | Archive de l'ancien POC mixte Web + API |
-| `variant/web-session-csrf` | Variante Web antérieure, conservée à titre de référence |
+| `variant/web-session-csrf` | Variante Web pédagogique, synchronisée sur le comportement de `main` |
 
 Le code de la librairie `mithridatem/router` n'est pas modifié par cette organisation.
 
@@ -37,7 +37,7 @@ require dirname(__DIR__) . '/vendor/autoload.php';
 - `src/Kernel/RouterFactory.php` : résolution des contrôleurs, middlewares, grants de session et chargement des routes Attributes.
 - `src/Kernel/WebErrorHandler.php` : codes HTTP et sortie HTML échappée, sans exposer les erreurs internes.
 - `config/service.php` : déclaration des services (PDO, configuration de l'upload) via `Container::load()`.
-- `src/Middleware/CsrfMiddleware.php` : contrôle des tokens sur les POST de connexion/inscription.
+- `src/Middleware/CsrfMiddleware.php` : protection générique des routes POST, avec un token indexé par chemin de soumission.
 
 Ces objets restent **dans l'application** : le conteneur d'autowiring ne connaît ni HTTP, ni routing, ni session. Aucun nouveau framework ni API publique de librairie n'est introduit.
 
@@ -58,4 +58,4 @@ php tests/user_session_manager_test.php
 
 La CI exécute les tests statiques et fonctionnels du bootstrap et des formulaires. Vérifier ensuite manuellement le parcours HTML contre une base SQL locale : inscription, authentification, grants et protection CSRF.
 
-Voir aussi `docs/csrf-middleware.md`.
+Pour ajouter un formulaire CSRF : protéger uniquement sa route POST avec `CsrfMiddleware` et générer le token avec son chemin public, sans modifier de registre. Les contrôleurs Login et Register utilisent `#[RouteGroup]` pour conserver les mêmes URL. Voir `docs/csrf-middleware.md` et `docs/route-groups-web.md`.
