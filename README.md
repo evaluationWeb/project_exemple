@@ -38,6 +38,8 @@ php -S 127.0.0.1:8000 -t public
 
 Endpoints Web : `/`, `/login` (GET/POST), `/register` (GET/POST).
 
+Les routes `/login` et `/register` sont désormais limitées aux visiteurs (`IS_GUEST`) avec `mithridatem/router:^1.7`. Un utilisateur déjà connecté est renvoyé, depuis l'application Web, vers sa dernière page GET locale autorisée (ou une route de repli configurable, `/` par défaut). Aucune logique de redirection n'est ajoutée au routeur ni à la variante API JWT. Voir [le guide de navigation invité](docs/guest-navigation.md).
+
 ## Un front controller simple
 
 ```php
@@ -48,6 +50,7 @@ require dirname(__DIR__) . '/vendor/autoload.php';
 - `src/Kernel/Application.php` : coordination uniquement (bootstrap, conteneur, routeur et dispatch).
 - `src/Kernel/WebBootstrap.php` : variables d'environnement, en-têtes de sécurité et session PHP.
 - `src/Kernel/RouterFactory.php` : résolution des contrôleurs, middlewares, grants de session et chargement des routes Attributes.
+- `src/Security/GuestNavigation.php` : mémorisation en session et redirection sûre des utilisateurs connectés refusés sur une route `IS_GUEST`.
 - `src/Kernel/WebErrorHandler.php` : codes HTTP et sortie HTML échappée, sans exposer les erreurs internes.
 - `config/service.php` : déclaration des services (PDO, configuration de l'upload) via `Container::load()`.
 - `src/Middleware/CsrfMiddleware.php` : protection générique des routes POST, avec un token indexé par chemin de soumission.
@@ -58,6 +61,7 @@ Ces objets restent **dans l'application** : le conteneur d'autowiring ne connaî
 
 ```sh
 php tests/web_kernel_test.php
+php tests/guest_navigation_test.php
 php tests/csrf_token_manager_test.php
 php tests/csrf_middleware_test.php
 php tests/csrf_route_configuration_test.php
