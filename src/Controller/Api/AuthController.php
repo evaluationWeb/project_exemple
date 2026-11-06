@@ -9,13 +9,15 @@ use App\Security\Jwt\JwtTokenManager;
 use App\Service\LoginService;
 use JsonException;
 use Mithridatem\Routing\Attribute\Route;
+use Mithridatem\Routing\Attribute\RouteGroup;
 use Mithridatem\Routing\Http\RequestInterface;
 
+#[RouteGroup(prefix: '/api')]
 final class AuthController
 {
     public function __construct(private LoginService $login, private JwtTokenManager $tokens) {}
 
-    #[Route(path: '/api/login', method: 'POST')]
+    #[Route(path: '/login', method: 'POST')]
     public function login(RequestInterface $request): void
     {
         try {
