@@ -1,6 +1,6 @@
 # project_exemple — variante Web (sessions + CSRF)
 
-Branche pédagogique **Web HTTP classique uniquement**. Authentification par session PHP, gestion des rôles avec `grants`, protection CSRF par middleware sur les formulaires HTML. Aucun endpoint JWT/API.
+Branche pédagogique **Web HTTP classique uniquement**. Authentification par session PHP, gestion des rôles avec `grants`, protection CSRF par middleware sur les formulaires HTML. Aucun endpoint JWT/API. Les routes Web d'authentification sont protégées par `IS_GUEST` depuis `mithridatem/router:^1.7`.
 
 
 ## Configuration des environnements
@@ -32,6 +32,7 @@ Le front controller `public/index.php` délègue désormais le démarrage à `Ap
 - `src/Kernel/Application.php` orchestre le bootstrap, la configuration du conteneur, la création du routeur et le dispatch.
 - `src/Kernel/WebBootstrap.php` sélectionne la configuration selon `APP_ENV`, puis configure les en-têtes de sécurité et démarre la session PHP.
 - `src/Kernel/RouterFactory.php` compose le routeur, l'autowiring, les grants de session et charge les attributs `#[Route]` / `#[RouteGroup]`.
+- `src/Security/GuestNavigation.php` mémorise la dernière page GET autorisée en session et sélectionne une redirection sûre pour un utilisateur connecté demandant une route réservée aux invités (repli `/` configurable).
 - `src/Kernel/WebErrorHandler.php` traduit les exceptions en réponses HTML et codes HTTP adaptés, sans exposer les erreurs internes.
 
 Ces classes sont propres **à l'application Web** : aucune logique de bootstrap n'est ajoutée aux librairies, et le profil API garde son `ApiBootstrap` / `ApiErrorHandler`.
@@ -42,15 +43,18 @@ L'authentification par session et le middleware CSRF basé sur le chemin public 
 
 - `GET /login` et `POST /login` : connexion Web, session et CSRF.
 - `GET /register` et `POST /register` : inscription et CSRF.
-- Les `grants` sont lus depuis `$_SESSION['user']['grant']`.
+- Les `grants` sont lus depuis `$_SESSION['user']['grant']` ; les routes `/login` et `/register` (GET et POST) exigent `IS_GUEST`.
+- Pour un utilisateur déjà authentifié, ces routes redirigent en HTTP 303 vers la dernière page GET interne autorisée ou `/` si aucune page précédente n'est disponible.
+- Voir [navigation invité Web](docs/guest-navigation.md).
 
 ## Tests
 
 ```bash
 php tests/web_kernel_test.php
+php tests/guest_navigation_test.php
 ```
 
-Ce test vérifie les routes groupées et publiques, la présence du middleware uniquement sur les POST, l'absence de routes API et les réponses HTML d'erreur.
+Ce test vérifie les routes groupées et réservées aux visiteurs, la présence du middleware uniquement sur les POST, l'absence de routes API et les réponses HTML d'erreur.
 
 Les autres tests existants restent applicables :
 

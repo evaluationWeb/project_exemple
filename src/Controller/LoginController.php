@@ -22,13 +22,13 @@ final class LoginController extends AbstractController
         private CsrfTokenManager $csrf,
     ) {}
 
-    #[Route(path: '/', method: 'GET', grants: [])]
+    #[Route(path: '/', method: 'GET', grants: ['IS_GUEST'])]
     public function showLogin(): mixed
     {
         return $this->renderLoginForm();
     }
 
-    #[Route(path: '/', method: 'POST', grants: [], middleware: [CsrfMiddleware::class])]
+    #[Route(path: '/', method: 'POST', grants: ['IS_GUEST'], middleware: [CsrfMiddleware::class])]
     public function login(ParameterCollectionRequestInterface $request): mixed
     {
         $input = LoginInput::fromArray($request->allPost());

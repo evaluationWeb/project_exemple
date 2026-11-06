@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App\Kernel;
 
+use App\Security\GuestNavigation;
 use Mithridatem\Autowiring\Container;
+use Mithridatem\Routing\Exception\UnauthorizedException;
+use Mithridatem\Routing\Http\Request;
 use Throwable;
 
 /**
@@ -25,9 +28,20 @@ final class Application
 
         $router = (new RouterFactory($container, $this->rootPath))->create();
 
+        $request = Request::fromGlobals();
+        $navigation = new GuestNavigation();
+
         try {
-            $router->dispatch();
+            $router->dispatch($request);
+            $navigation->rememberSuccessfulGet($request, $router);
         } catch (Throwable $error) {
+            if ($error instanceof UnauthorizedException) {
+                $destination = $navigation->destinationForDeniedGuest($request, $router);
+                if ($destination !== null) {
+                    header('Location: ' . $destination, true, 303);
+                    return;
+                }
+            }
             (new WebErrorHandler())->handle($error);
         }
     }
