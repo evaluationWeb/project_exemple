@@ -2,6 +2,19 @@
 
 Base PHP MVC pédagogique et utilisable pour un projet Web classique : sessions PHP, protection CSRF par middleware, DTO, services, repositories, injection de dépendances et autorisations par `grants`.
 
+
+## Configuration des environnements
+
+- **Développement** : copier `.env.example` vers `.env`, puis renseigner ses propres valeurs ; `APP_ENV=dev` par défaut.
+- **Tests** : définir `APP_ENV=test` dans le processus pour charger `.env.test` (facultatif).
+- **Production** : définir `APP_ENV=prod` et injecter les variables/secrets via le serveur ou le conteneur. Aucun fichier `.env.prod` ni `.env` n'est lu.
+
+Les fichiers `.env` et `.env.*` sont ignorés par Git (sauf `.env.example`). Le fichier `.env` précédemment suivi par Git a été retiré du dépôt, sans effacer son historique : toute valeur sensible déjà publiée doit être renouvelée. Voir [guide des environnements](docs/environments.md).
+
+```bash
+php tests/environment_loader_test.php
+```
+
 ## Organisation des branches
 
 | Branche | Usage |
@@ -17,7 +30,7 @@ Le code de la librairie `mithridatem/router` n'est pas modifié par cette organi
 
 ```sh
 composer install
-# Renseigner votre .env avec DATABASE_HOST, DATABASE_PORT, DATABASE_NAME,
+# Copier .env.example vers .env, puis renseigner DATABASE_HOST, DATABASE_PORT, DATABASE_NAME,
 # DATABASE_USERNAME, DATABASE_PASSWORD et UPLOAD_DIRECTORY
 # Importer db.sql dans MySQL/MariaDB
 php -S 127.0.0.1:8000 -t public
