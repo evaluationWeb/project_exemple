@@ -15,6 +15,7 @@ use Mithridatem\Routing\Loader\AttributeRouteLoader;
 use Mithridatem\Routing\Middleware\MiddlewareInterface;
 use Mithridatem\Routing\Middleware\MiddlewareResolverInterface;
 use Mithridatem\Routing\Router;
+use Mithridatem\Routing\Group\GroupedRoute;
 
 session_start();
 $router = new Router();
@@ -40,6 +41,12 @@ foreach (['/login', '/register'] as $path) {
     $post = $router->getRoutes()->match('POST', $path);
     if ($get === null || $post === null) {
         throw new RuntimeException('Expected GET and POST routes for ' . $path);
+    }
+    if (!$get->getRoute() instanceof GroupedRoute || !$post->getRoute() instanceof GroupedRoute) {
+        throw new RuntimeException('Expected grouped authentication routes: ' . $path);
+    }
+    if ($get->getRoute()->getGrants() !== [] || $post->getRoute()->getGrants() !== []) {
+        throw new RuntimeException('Authentication routes must remain public: ' . $path);
     }
     if ($get->getRoute()->getMiddleware() !== []) {
         throw new RuntimeException('GET must not require CSRF middleware: ' . $path);
