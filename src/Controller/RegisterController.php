@@ -21,7 +21,7 @@ final class RegisterController extends AbstractController
     ) {}
 
     #[Route(path: '/', method: 'GET', grants: ['IS_GUEST'])]
-    #[Route(path: '/', method: 'POST', grants: [], middleware: [CsrfMiddleware::class])]
+    #[Route(path: '/', method: 'POST', grants: ['IS_GUEST'], middleware: [CsrfMiddleware::class])]
     public function register(ParameterCollectionRequestInterface $request): mixed
     {
         $result = [];
