@@ -21,7 +21,7 @@ if (!mkdir($directory, 0700) && !is_dir($directory)) {
 
 $originalAppEnv = getenv('APP_ENV');
 $originalDatabaseHost = getenv('DATABASE_HOST');
-$originalServerAppEnv = $_SERVER['APP_ENV'] ?? null;
+$originalServer = $_SERVER;
 $originalEnv = $_ENV;
 
 try {
@@ -31,29 +31,29 @@ try {
 
     putenv('DATABASE_HOST');
     putenv('APP_ENV=dev');
-    unset($_ENV['DATABASE_HOST']);
+    unset($_ENV['DATABASE_HOST'], $_SERVER['DATABASE_HOST']);
     (new EnvironmentLoader())->load($directory);
     checkEnvironment($_ENV['DATABASE_HOST'] === 'local-dev', 'Dev must load .env.');
 
     putenv('DATABASE_HOST=injected-host');
-    unset($_ENV['DATABASE_HOST']);
+    unset($_ENV['DATABASE_HOST'], $_SERVER['DATABASE_HOST']);
     (new EnvironmentLoader())->load($directory);
     checkEnvironment($_ENV['DATABASE_HOST'] === 'injected-host', 'Injected variables must override local dotenv values.');
     putenv('DATABASE_HOST');
 
     putenv('APP_ENV=test');
-    unset($_ENV['DATABASE_HOST']);
+    unset($_ENV['DATABASE_HOST'], $_SERVER['DATABASE_HOST']);
     (new EnvironmentLoader())->load($directory);
     checkEnvironment($_ENV['DATABASE_HOST'] === 'local-test', 'Test must load .env.test.');
 
     putenv('APP_ENV=prod');
     putenv('DATABASE_HOST=server-prod');
-    unset($_ENV['DATABASE_HOST']);
+    unset($_ENV['DATABASE_HOST'], $_SERVER['DATABASE_HOST']);
     (new EnvironmentLoader())->load($directory);
     checkEnvironment($_ENV['DATABASE_HOST'] === 'server-prod', 'Production must use server variables.');
 
     putenv('DATABASE_HOST');
-    unset($_ENV['DATABASE_HOST']);
+    unset($_ENV['DATABASE_HOST'], $_SERVER['DATABASE_HOST']);
     (new EnvironmentLoader())->load($directory);
     checkEnvironment(!isset($_ENV['DATABASE_HOST']), 'Production must not read .env, .env.test or .env.prod.');
 
@@ -81,10 +81,6 @@ try {
     } else {
         putenv('DATABASE_HOST=' . $originalDatabaseHost);
     }
-    if ($originalServerAppEnv === null) {
-        unset($_SERVER['APP_ENV']);
-    } else {
-        $_SERVER['APP_ENV'] = $originalServerAppEnv;
-    }
+    $_SERVER = $originalServer;
     $_ENV = $originalEnv;
 }
