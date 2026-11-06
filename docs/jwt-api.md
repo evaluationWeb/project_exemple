@@ -14,7 +14,7 @@ JWT_AUDIENCE="project-exemple-api"
 
 Générer le secret avec `php -r "echo bin2hex(random_bytes(32)), PHP_EOL;"`. Utiliser HTTPS pour toute utilisation réelle. La configuration est évaluée à la construction de `JwtTokenManager` (l'accès au site Web n'exige pas le secret).
 
-Le token HS256 est valide pendant **900 secondes** et contient `iss`, `aud`, `sub`, `iat`, `nbf`, `exp`, `jti`, `email` et `roles`. La signature et les claims sont contrôlés par le gestionnaire avant de constituer l'identité. Les rôles du token sont une photographie à l'émission : les changements en base ne sont pas visibles avant expiration.
+Le token HS256 est valide pendant **900 secondes par défaut** (configurable par `JWT_TTL_SECONDS` dans `.env`) et contient `iss`, `aud`, `sub`, `iat`, `nbf`, `exp`, `jti`, `email` et `roles`. La signature et les claims sont contrôlés par le gestionnaire avant de constituer l'identité. Les rôles du token sont une photographie à l'émission : les changements en base ne sont pas visibles avant expiration.
 
 ## API
 
