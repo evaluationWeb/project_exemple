@@ -9,6 +9,7 @@ use App\Kernel\ApiErrorHandler;
 use App\Kernel\RouterFactory;
 use App\Middleware\JwtMiddleware;
 use Mithridatem\Autowiring\Container;
+use Mithridatem\Routing\Group\GroupedRoute;
 use Mithridatem\Routing\Exception\MethodNotAllowedException;
 use Mithridatem\Routing\Exception\RouteNotFoundException;
 use Mithridatem\Routing\Exception\UnauthorizedException;
@@ -27,11 +28,15 @@ $login = $router->getRoutes()->match('POST', '/api/login');
 $profile = $router->getRoutes()->match('GET', '/api/profile');
 
 checkApiKernel($login !== null && $profile !== null, 'Expected API routes not discovered');
+checkApiKernel($login->getRoute() instanceof GroupedRoute, 'Login route must use RouteGroup');
+checkApiKernel($profile->getRoute() instanceof GroupedRoute, 'Profile route must use RouteGroup');
+checkApiKernel($login->getRoute()->getGrants() === [], 'Public login inherited protected grants');
 checkApiKernel($login->getRoute()->getMiddleware() === [], 'API login must be public');
 checkApiKernel($profile->getRoute()->getMiddleware() === [JwtMiddleware::class], 'JWT middleware missing from profile');
 checkApiKernel($profile->getRoute()->getGrants() === ['ROLE_USER'], 'Profile grants changed');
 checkApiKernel($router->getRoutes()->match('GET', '/login') === null, 'Web routes must not be loaded');
 checkApiKernel($router->getRoutes()->match('GET', '/register') === null, 'Web routes must not be loaded');
+checkApiKernel($router->getRoutes()->match('GET', '/profile') === null, 'Ungrouped profile URL should not exist');
 
 $handler = new ApiErrorHandler();
 foreach ([

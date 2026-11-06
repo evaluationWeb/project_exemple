@@ -6,7 +6,7 @@
         }
     },
     "require": {
-        "mithridatem/router": "^1.4",
+        "mithridatem/router": "^1.6",
         "mithridatem/autowiring": "^1.2",
         "mithridatem/validation": "^1.2",
         "vlucas/phpdotenv": "^5.7",

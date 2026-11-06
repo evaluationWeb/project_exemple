@@ -26,7 +26,7 @@ function verifyJwt(bool $condition, string $message): void
 }
 
 $secret = str_repeat('a', 48);
-$tokens = new JwtTokenManager($secret, 'project-exemple', 'project-exemple-api');
+$tokens = new JwtTokenManager($secret, 'project-exemple', 'project-exemple-api', 900);
 $context = new AuthenticationContext();
 $router = new Router();
 $router->setGrantChecker(new ContextGrantChecker($context));

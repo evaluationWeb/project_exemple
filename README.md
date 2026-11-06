@@ -16,21 +16,27 @@ Configurer `.env` pour MySQL (script `db.sql`) et les paramètres suivants :
 JWT_SECRET=remplacer-par-une-cle-aleatoire-d-au-moins-32-octets
 JWT_ISSUER=project-exemple
 JWT_AUDIENCE=project-exemple-api
+JWT_TTL_SECONDS=900
 ```
 
 Générer une clé : `php -r "echo bin2hex(random_bytes(32)), PHP_EOL;"` ; ne jamais publier le secret. L'API doit être déployée en HTTPS.
 
 ## Endpoints
 
-- `POST /api/login` : body JSON `{"email":"...","password":"..."}`, renvoie un token Bearer (15 min).
-- `GET /api/profile` : header `Authorization: Bearer ...`, `grants: ['ROLE_USER']`.
+- `POST /api/login` : body JSON `{"email":"...","password":"..."}`, renvoie un token Bearer (durée configurée via `JWT_TTL_SECONDS`).
+- `GET /api/profile` : header `Authorization: Bearer ...`, exige `ROLE_USER` et le middleware JWT hérités du groupe de routes.
 - 401 si absence ou invalidité du JWT, 403 si droits insuffisants.
+
+## Groupes de routes
+
+`AuthController` et `ProfileController` utilisent chacun `#[RouteGroup(prefix: '/api')]`. Seul le groupe de `ProfileController` déclare `grants: ['ROLE_USER']` et `middleware: [JwtMiddleware::class]` : `/api/login` reste public. Les attributs des méthodes déclarent leurs chemins relatifs (`/login` et `/profile`) sans modifier les URL existantes. Voir `docs/jwt-api.md` pour les exemples et les règles d'héritage.
 
 ## Tests
 
 ```bash
 php tests/jwt_authentication_test.php
 php tests/jwt_api_routes_test.php
+php tests/api_kernel_test.php
 php tests/login_input_test.php
 ```
 
