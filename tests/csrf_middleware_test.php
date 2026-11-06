@@ -21,13 +21,15 @@ function checkMiddleware(bool $ok, string $message): void
 
 session_start();
 $tokens = new CsrfTokenManager();
-$loginToken = $tokens->generate('login');
-$registerToken = $tokens->generate('register');
+$loginToken = $tokens->generate('/login');
+$registerToken = $tokens->generate('/register');
+// A newly added route needs no registration inside CsrfMiddleware.
+$contactToken = $tokens->generate('/contact');
 $middleware = new CsrfMiddleware($tokens);
 $executions = 0;
 
 $router = new Router();
-foreach (['/login', '/register'] as $path) {
+foreach (['/login', '/register', '/contact'] as $path) {
     $router->map(Route::post($path, static function () use (&$executions): string {
         ++$executions;
         return 'OK';
@@ -42,19 +44,25 @@ checkMiddleware(
     $router->dispatch(new Request('/register', 'POST', post: ['csrf_token' => $registerToken])) === 'OK',
     'A valid register token must be accepted'
 );
-checkMiddleware($executions === 2, 'Expected two successful controller executions');
+checkMiddleware(
+    $router->dispatch(new Request('/contact', 'POST', post: ['csrf_token' => $contactToken])) === 'OK',
+    'A new protected form route must work without modifying CsrfMiddleware'
+);
+checkMiddleware($executions === 3, 'Expected three successful controller executions');
 
 foreach ([
     ['/login', []],
     ['/login', ['csrf_token' => 'incorrect']],
     ['/login', ['csrf_token' => $registerToken]],
     ['/register', ['csrf_token' => ['invalid']]],
+    ['/contact', ['csrf_token' => $loginToken]],
+    ['/contact', ['csrf_token' => 'invalid']],
 ] as [$path, $post]) {
     try {
         $router->dispatch(new Request($path, 'POST', post: $post));
         throw new RuntimeException('Invalid token unexpectedly accepted: ' . $path);
     } catch (InvalidCsrfTokenException $expected) {
-        checkMiddleware($executions === 2, 'Controller must not execute on CSRF failure');
+        checkMiddleware($executions === 3, 'Controller must not execute on CSRF failure');
     }
 }
 

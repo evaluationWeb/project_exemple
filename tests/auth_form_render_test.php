@@ -48,8 +48,8 @@ $csrf = new CsrfTokenManager();
 $login = controllerForRender(LoginController::class, $csrf);
 $register = controllerForRender(RegisterController::class, $csrf);
 
-$loginToken = $csrf->generate('login');
-$registerToken = $csrf->generate('register');
+$loginToken = $csrf->generate('/login');
+$registerToken = $csrf->generate('/register');
 assertForm($loginToken !== $registerToken, 'Les formulaires doivent avoir des tokens distincts');
 
 $loginGet = captureForm(fn() => $login->showLogin());

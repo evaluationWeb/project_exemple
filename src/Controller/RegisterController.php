@@ -38,7 +38,7 @@ final class RegisterController extends AbstractController
     {
         return $this->render('register', 'Inscription', [
             ...$data,
-            'csrf_token' => $this->csrf->generate('register'),
+            'csrf_token' => $this->csrf->generate('/register'),
         ]);
     }
 }
