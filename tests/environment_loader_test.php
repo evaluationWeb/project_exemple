@@ -35,6 +35,12 @@ try {
     (new EnvironmentLoader())->load($directory);
     checkEnvironment($_ENV['DATABASE_HOST'] === 'local-dev', 'Dev must load .env.');
 
+    putenv('DATABASE_HOST=injected-host');
+    unset($_ENV['DATABASE_HOST']);
+    (new EnvironmentLoader())->load($directory);
+    checkEnvironment($_ENV['DATABASE_HOST'] === 'injected-host', 'Injected variables must override local dotenv values.');
+    putenv('DATABASE_HOST');
+
     putenv('APP_ENV=test');
     unset($_ENV['DATABASE_HOST']);
     (new EnvironmentLoader())->load($directory);
