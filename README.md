@@ -1,6 +1,6 @@
-# project_exemple — application Web (main)
+# project_exemple — variante Web (sessions + CSRF)
 
-Base PHP MVC pédagogique et utilisable pour un projet Web classique : sessions PHP, protection CSRF par middleware, DTO, services, repositories, injection de dépendances et autorisations par `grants`.
+Branche pédagogique **Web HTTP classique uniquement**. Authentification par session PHP, gestion des rôles avec `grants`, protection CSRF par middleware sur les formulaires HTML. Aucun endpoint JWT/API. Les routes Web d'authentification sont protégées par `IS_GUEST` depuis `mithridatem/router:^1.7`.
 
 
 ## Configuration des environnements
@@ -15,64 +15,62 @@ Les fichiers `.env` et `.env.*` sont ignorés par Git (sauf `.env.example`). Le 
 php tests/environment_loader_test.php
 ```
 
-## Organisation des branches
+## Installation
 
-| Branche | Usage |
-|---|---|
-| `main` | **Web de référence**, sessions PHP, CSRF générique et `RouteGroup` |
-| `variant/api-jwt` | API REST JSON, authentification Firebase JWT et grants |
-| `archive/web-api-combined-2026-11-05` | Archive de l'ancien POC mixte Web + API |
-| `variant/web-session-csrf` | Variante Web pédagogique, synchronisée sur le comportement de `main` |
-
-Le code de la librairie `mithridatem/router` n'est pas modifié par cette organisation.
-
-## Installation et exécution
-
-```sh
+```bash
+git switch variant/web-session-csrf
 composer install
-# Copier .env.example vers .env, puis renseigner DATABASE_HOST, DATABASE_PORT, DATABASE_NAME,
-# DATABASE_USERNAME, DATABASE_PASSWORD et UPLOAD_DIRECTORY
-# Importer db.sql dans MySQL/MariaDB
 php -S 127.0.0.1:8000 -t public
 ```
 
-Endpoints Web : `/`, `/login` (GET/POST), `/register` (GET/POST).
+Configurez la base MySQL avec `db.sql` et vos variables `DATABASE_*` dans un fichier `.env` local, créé à partir de `.env.example`.
 
-Les routes `/login` et `/register` sont désormais limitées aux visiteurs (`IS_GUEST`) avec `mithridatem/router:^1.7`. Un utilisateur déjà connecté est renvoyé, depuis l'application Web, vers sa dernière page GET locale autorisée (ou une route de repli configurable, `/` par défaut). Aucune logique de redirection n'est ajoutée au routeur ni à la variante API JWT. Voir [le guide de navigation invité](docs/guest-navigation.md).
+## Architecture du point d'entrée
 
-## Un front controller simple
+Le front controller `public/index.php` délègue désormais le démarrage à `App\Kernel\Application`. Le noyau Web reste volontairement léger :
 
-```php
-require dirname(__DIR__) . '/vendor/autoload.php';
-(new App\Kernel\Application(dirname(__DIR__)))->run();
-```
+- `src/Kernel/Application.php` orchestre le bootstrap, la configuration du conteneur, la création du routeur et le dispatch.
+- `src/Kernel/WebBootstrap.php` sélectionne la configuration selon `APP_ENV`, puis configure les en-têtes de sécurité et démarre la session PHP.
+- `src/Kernel/RouterFactory.php` compose le routeur, l'autowiring, les grants de session et charge les attributs `#[Route]` / `#[RouteGroup]`.
+- `src/Security/GuestNavigation.php` mémorise la dernière page GET autorisée en session et sélectionne une redirection sûre pour un utilisateur connecté demandant une route réservée aux invités (repli `/` configurable).
+- `src/Kernel/WebErrorHandler.php` traduit les exceptions en réponses HTML et codes HTTP adaptés, sans exposer les erreurs internes.
 
-- `src/Kernel/Application.php` : coordination uniquement (bootstrap, conteneur, routeur et dispatch).
-- `src/Kernel/WebBootstrap.php` : variables d'environnement, en-têtes de sécurité et session PHP.
-- `src/Kernel/RouterFactory.php` : résolution des contrôleurs, middlewares, grants de session et chargement des routes Attributes.
-- `src/Security/GuestNavigation.php` : mémorisation en session et redirection sûre des utilisateurs connectés refusés sur une route `IS_GUEST`.
-- `src/Kernel/WebErrorHandler.php` : codes HTTP et sortie HTML échappée, sans exposer les erreurs internes.
-- `config/service.php` : déclaration des services (PDO, configuration de l'upload) via `Container::load()`.
-- `src/Middleware/CsrfMiddleware.php` : protection générique des routes POST, avec un token indexé par chemin de soumission.
+Ces classes sont propres **à l'application Web** : aucune logique de bootstrap n'est ajoutée aux librairies, et le profil API garde son `ApiBootstrap` / `ApiErrorHandler`.
 
-Ces objets restent **dans l'application** : le conteneur d'autowiring ne connaît ni HTTP, ni routing, ni session. Aucun nouveau framework ni API publique de librairie n'est introduit.
+L'authentification par session et le middleware CSRF basé sur le chemin public POST restent inchangés ; voir `docs/csrf-middleware.md`.
+
+## Parcours
+
+- `GET /login` et `POST /login` : connexion Web, session et CSRF.
+- `GET /register` et `POST /register` : inscription et CSRF.
+- Les `grants` sont lus depuis `$_SESSION['user']['grant']` ; les routes `/login` et `/register` (GET et POST) exigent `IS_GUEST`.
+- Pour un utilisateur déjà authentifié, ces routes redirigent en HTTP 303 vers la dernière page GET interne autorisée ou `/` si aucune page précédente n'est disponible.
+- Voir [navigation invité Web](docs/guest-navigation.md).
 
 ## Tests
 
-```sh
+```bash
 php tests/web_kernel_test.php
 php tests/guest_navigation_test.php
+```
+
+Ce test vérifie les routes groupées et réservées aux visiteurs, la présence du middleware uniquement sur les POST, l'absence de routes API et les réponses HTML d'erreur.
+
+Les autres tests existants restent applicables :
+
+
+```bash
 php tests/csrf_token_manager_test.php
 php tests/csrf_middleware_test.php
 php tests/csrf_route_configuration_test.php
-php tests/auth_form_render_test.php
 php tests/form_submission_test.php
+php tests/auth_form_render_test.php
 php tests/request_dto_mapping_test.php
 php tests/login_input_test.php
 php tests/register_user_input_test.php
 php tests/user_session_manager_test.php
 ```
 
-La CI exécute les tests statiques et fonctionnels du bootstrap et des formulaires. Vérifier ensuite manuellement le parcours HTML contre une base SQL locale : inscription, authentification, grants et protection CSRF.
+Pour protéger un nouveau formulaire, appliquez `CsrfMiddleware` uniquement à la route POST et générez le token avec le chemin de soumission correspondant. Aucun registre de formulaires n'est à maintenir. Consultez `docs/csrf-middleware.md` pour les exemples et les limites.
 
-Pour ajouter un formulaire CSRF : protéger uniquement sa route POST avec `CsrfMiddleware` et générer le token avec son chemin public, sans modifier de registre. Les contrôleurs Login et Register utilisent `#[RouteGroup]` pour conserver les mêmes URL. Voir `docs/csrf-middleware.md` et `docs/route-groups-web.md`.
+La branche `main` possède également un noyau Web ; cette PR aligne la variante Web sur cette organisation en conservant ses améliorations récentes.

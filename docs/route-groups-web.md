@@ -1,30 +1,9 @@
-# Groupes de routes — variante Web
+# RouteGroup in Web variant
 
-Les contrôleurs `LoginController` et `RegisterController` utilisent `#[RouteGroup]` depuis `mithridatem/router` 1.6.
+Login and Register controllers now use class-level `RouteGroup` prefixes while keeping the public URLs `/login` and `/register`.
 
-```php
-#[RouteGroup(prefix: '/login')]
-final class LoginController extends AbstractController
-{
-    #[Route(path: '/', method: 'GET', grants: [])]
-    public function showLogin(): mixed { /* rendu */ }
+The GET and POST actions require `IS_GUEST` with `mithridatem/router:^1.7`. GET actions have no middleware. The POST actions alone retain `CsrfMiddleware`. Applying that middleware at class level would break GET requests because it requires POST.
 
-    #[Route(path: '/', method: 'POST', grants: [], middleware: [CsrfMiddleware::class])]
-    public function login(ParameterCollectionRequestInterface $request): mixed { /* traitement */ }
-}
-```
+A logged-in session visiting a guest-only page redirects at the application level (see `guest-navigation.md`).
 
-Le préfixe de classe `/login` et le chemin relatif `/` produisent l'URL publique `/login`. `RegisterController` suit le même principe avec `/register`.
-
-Les formulaires d'authentification restent accessibles publiquement (grants vides). **Le middleware CSRF est appliqué uniquement aux routes POST** : il ne doit pas être posé au niveau du groupe, car il refuserait les GET.
-
-Le token CSRF est généré dans le contrôleur pour le chemin de soumission complet (`$this->csrf->generate('/login')`) et contrôlé par le middleware depuis `RequestInterface::getPath()`. Aucun registre de formulaires n'est nécessaire. Détails : [`csrf-middleware.md`](csrf-middleware.md).
-
-Pour vérifier la configuration :
-
-```bash
-composer install
-php tests/csrf_route_configuration_test.php
-php tests/web_kernel_test.php
-php tests/csrf_middleware_test.php
-```
+Run `php tests/csrf_route_configuration_test.php` and the existing CSRF tests after `composer update mithridatem/router -W`.

@@ -42,7 +42,6 @@ final class Application
                     return;
                 }
             }
-
             (new WebErrorHandler())->handle($error);
         }
     }

@@ -2,7 +2,7 @@ name: Verify Web session and CSRF
 
 on:
   push:
-    branches: [main, variant/web-session-csrf]
+    branches: [variant/web-session-csrf]
   pull_request:
     paths:
       - 'src/Kernel/**'
@@ -14,6 +14,8 @@ on:
       - 'template/template_register.php'
       - 'tests/csrf_token_manager_test.php'
       - 'tests/csrf_middleware_test.php'
+      - 'tests/jwt_authentication_test.php'
+      - 'tests/jwt_api_routes_test.php'
       - 'tests/csrf_route_configuration_test.php'
       - 'tests/web_kernel_test.php'
       - 'tests/guest_navigation_test.php'
