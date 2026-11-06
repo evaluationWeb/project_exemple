@@ -8,6 +8,7 @@ use App\Middleware\ContainerMiddlewareResolver;
 use Mithridatem\Autowiring\Bridge\Routing\ContainerControllerResolver;
 use Mithridatem\Autowiring\Container;
 use Mithridatem\Routing\Auth\ArrayGrantChecker;
+use Mithridatem\Routing\Auth\AuthenticationAwareGrantChecker;
 use Mithridatem\Routing\Loader\AttributeRouteLoader;
 use Mithridatem\Routing\Router;
 
@@ -27,7 +28,10 @@ final class RouterFactory
         $router->setControllerResolver(new ContainerControllerResolver($this->container));
         $router->setMiddlewareResolver(new ContainerMiddlewareResolver($this->container));
         $router->setGrantChecker(
-            new ArrayGrantChecker($_SESSION['user']['grant'] ?? [])
+            new AuthenticationAwareGrantChecker(
+                static fn (): bool => isset($_SESSION['user']['id']),
+                new ArrayGrantChecker($_SESSION['user']['grant'] ?? [])
+            )
         );
 
         (new AttributeRouteLoader())->loadDirectory(
