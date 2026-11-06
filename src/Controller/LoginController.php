@@ -46,7 +46,7 @@ final class LoginController extends AbstractController
     {
         return $this->render('login', 'Connexion', [
             ...$data,
-            'csrf_token' => $this->csrf->generate('login'),
+            'csrf_token' => $this->csrf->generate('/login'),
         ]);
     }
 }
