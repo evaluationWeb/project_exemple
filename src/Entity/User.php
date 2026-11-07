@@ -182,24 +182,24 @@ class User implements Entity
         return $hydrateUser;
     }
 
-    private static function hydrateDate(mixed $date): ?\\DateTimeImmutable
+    private static function hydrateDate(mixed $date): ?\DateTimeImmutable
     {
         if ($date === null) {
             return null;
         }
 
-        if ($date instanceof \\DateTimeImmutable) {
+        if ($date instanceof \DateTimeImmutable) {
             return $date;
         }
 
         if (!is_string($date)) {
-            throw new \\UnexpectedValueException('Invalid database date type.');
+            throw new \UnexpectedValueException('Invalid database date type.');
         }
 
         try {
-            return new \\DateTimeImmutable($date);
-        } catch (\\Exception $e) {
-            throw new \\UnexpectedValueException('Invalid database date format.', 0, $e);
+            return new \DateTimeImmutable($date);
+        } catch (\Exception $e) {
+            throw new \UnexpectedValueException('Invalid database date format.', 0, $e);
         }
     }
 }
