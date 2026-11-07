@@ -45,8 +45,8 @@ foreach (['/login', '/register'] as $path) {
     if (!$get->getRoute() instanceof GroupedRoute || !$post->getRoute() instanceof GroupedRoute) {
         throw new RuntimeException('Expected grouped authentication routes: ' . $path);
     }
-    if ($get->getRoute()->getGrants() !== [] || $post->getRoute()->getGrants() !== []) {
-        throw new RuntimeException('Authentication routes must remain public: ' . $path);
+    if ($get->getRoute()->getGrants() !== ['IS_GUEST'] || $post->getRoute()->getGrants() !== ['IS_GUEST']) {
+        throw new RuntimeException('Authentication routes must be guest-only: ' . $path);
     }
     if ($get->getRoute()->getMiddleware() !== []) {
         throw new RuntimeException('GET must not require CSRF middleware: ' . $path);
