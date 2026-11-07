@@ -25,6 +25,8 @@ on:
       - 'config/service.php'
       - 'docs/security-audit-2026-11.md'
       - 'tests/security/**'
+      - 'src/Repository/**'
+      - 'src/Entity/**'
       - '.github/workflows/csrf-forms.yml'
   workflow_dispatch:
 
@@ -65,6 +67,8 @@ jobs:
           php -l tests/auth_form_render_test.php
           php -l tests/request_dto_mapping_test.php
           php -l tests/security/reproduce_repository_leak.php
+          php -l src/Repository/UserRepository.php
+          php -l src/Entity/User.php
       - name: Run focused tests
         run: |
           php tests/environment_loader_test.php
@@ -75,3 +79,4 @@ jobs:
           php tests/form_submission_test.php
           php tests/auth_form_render_test.php
           php tests/request_dto_mapping_test.php
+          php tests/security/reproduce_repository_leak.php
