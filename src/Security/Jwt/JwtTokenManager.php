@@ -12,8 +12,6 @@ use Throwable;
 
 final class JwtTokenManager
 {
-    //private const int TTL_SECONDS = 900;
-
     public function __construct(
         private string $secret,
         private string $issuer,
@@ -22,6 +20,10 @@ final class JwtTokenManager
     ) {
         if (strlen($secret) < 32 || $issuer === '' || $audience === '') {
             throw new \LogicException('JWT configuration missing: define a random JWT_SECRET (32+ bytes), JWT_ISSUER and JWT_AUDIENCE.');
+        }
+
+        if ($ttl <= 0) {
+            throw new \InvalidArgumentException('JWT_TTL_SECONDS must be a positive integer.');
         }
     }
 

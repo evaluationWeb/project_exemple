@@ -29,6 +29,21 @@ $issuer = 'audit-issuer';
 $audience = 'audit-audience';
 $ttl = 900;
 $tokens = new JwtTokenManager($secret, $issuer, $audience, $ttl);
+
+// Invalid configuration must fail before issuing or verifying any token.
+foreach ([0, -1, -900] as $invalidTtl) {
+    try {
+        new JwtTokenManager($secret, $issuer, $audience, $invalidTtl);
+        throw new RuntimeException('Invalid JWT TTL unexpectedly accepted: ' . $invalidTtl);
+    } catch (InvalidArgumentException $expected) {
+        checkJwtEdge(
+            str_contains($expected->getMessage(), 'JWT_TTL_SECONDS'),
+            'TTL configuration error must identify the setting.'
+        );
+    }
+}
+checkJwtEdge((new JwtTokenManager($secret, $issuer, $audience, 1))->expiresIn() === 1, 'Positive TTL rejected.');
+checkJwtEdge($tokens->expiresIn() === 900, 'Configured TTL changed.');
 $context = new AuthenticationContext();
 $router = new Router();
 $router->addMiddleware(new RequestAuthenticationMiddleware($context));

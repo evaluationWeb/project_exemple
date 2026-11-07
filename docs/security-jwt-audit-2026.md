@@ -28,11 +28,11 @@ Les tests adversariaux supplémentaires sont dans
 ## Limites et points de vigilance
 
 1. **Configuration du TTL :** le constructeur de `JwtTokenManager`
-   vérifie la longueur du secret, l'issuer et l'audience, mais ne
-   contraint pas explicitement `$ttl` à être strictement positif.
-   La configuration doit imposer une durée positive et raisonnable ;
-   un contrôle explicite pourrait être proposé dans une PR distincte
-   après test et analyse d'impact.
+   refuse désormais les valeurs de TTL nulles ou négatives en levant
+   `InvalidArgumentException`. Une valeur positive reste configurable ;
+   l'application doit choisir une durée raisonnable selon son contexte.
+   Les tests adversariaux vérifient `0`, les valeurs négatives et les
+   valeurs positives.
 2. **Clé et déploiement :** une longueur minimale de secret ne garantit
    pas sa qualité aléatoire. Déployer une clé générée
    cryptographiquement et ne pas l'inclure dans Git.
