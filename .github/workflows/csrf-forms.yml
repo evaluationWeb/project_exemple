@@ -15,6 +15,7 @@ on:
       - 'tests/csrf_token_manager_test.php'
       - 'tests/csrf_middleware_test.php'
       - 'tests/csrf_route_configuration_test.php'
+      - 'tests/guest_navigation_test.php'
       - 'tests/web_kernel_test.php'
       - 'tests/environment_loader_test.php'
       - 'public/index.php'
@@ -55,6 +56,8 @@ jobs:
           php -l public/index.php
           php -l tests/csrf_middleware_test.php
           php -l tests/csrf_route_configuration_test.php
+          php -l src/Security/GuestNavigation.php
+          php -l tests/guest_navigation_test.php
           php -l src/Controller/AbstractController.php
           php -l src/Security/CsrfTokenManager.php
           php -l src/Controller/LoginController.php
@@ -72,6 +75,7 @@ jobs:
           php tests/csrf_token_manager_test.php
           php tests/csrf_middleware_test.php
           php tests/csrf_route_configuration_test.php
+          php tests/guest_navigation_test.php
           php tests/form_submission_test.php
           php tests/auth_form_render_test.php
           php tests/request_dto_mapping_test.php
