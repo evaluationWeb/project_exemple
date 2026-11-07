@@ -49,8 +49,8 @@ $base = [
     'jti' => 'security-test',
 ];
 
-$tokenFor = static fn (array $claims, string $key = $secret, string $algorithm = 'HS256'): string
-    => JWT::encode($claims, $key, $algorithm);
+$tokenFor = static fn (array $claims, ?string $key = null, string $algorithm = 'HS256'): string
+    => JWT::encode($claims, $key ?? $secret, $algorithm);
 $request = static fn (string $token): Request
     => new Request('/api/protected', 'GET', headers: ['Authorization' => 'Bearer ' . $token]);
 
