@@ -158,22 +158,48 @@ class User implements Entity
 
     public static function hydrate(array $user): User
     {
-        $hydrateUser =  new User(
-            $user["firstname"] ?? null,
-            $user["lastname"] ?? null,
-            $user["email"] ?? null,
-            $user["hash_password"] ?? null
+        $hydrateUser = new User(
+            $user['firstname'] ?? null,
+            $user['lastname'] ?? null,
+            $user['email'] ?? null,
+            $user['hash_password'] ?? null
         );
-        isset($user["updated_at"]) ?
-            $hydrateUser->setUpdatedAt($user["updated_at"]) :
-            $hydrateUser->setUpdatedAt(null);
-        isset($user["grant"]) ?
-            $hydrateUser->setGrant($user["grant"]) :
-            $hydrateUser->setGrant(null);
-        isset($user["img_profil"]) ?
-            $hydrateUser->setImgProfil($user["img_profil"]) :
-            $hydrateUser->setImgProfil(null);
+
+        // PDO returns DATETIME columns as strings. Convert them at the
+        // persistence boundary instead of passing strings to typed setters.
+        if (isset($user['created_at'])) {
+            $hydrateUser->setCreatedAt(
+                self::hydrateDate($user['created_at'])
+            );
+        }
+
+        $hydrateUser->setUpdatedAt(
+            self::hydrateDate($user['updated_at'] ?? null)
+        );
+        $hydrateUser->setGrant($user['grant'] ?? null);
+        $hydrateUser->setImgProfil($user['img_profil'] ?? null);
 
         return $hydrateUser;
+    }
+
+    private static function hydrateDate(mixed $date): ?\DateTimeImmutable
+    {
+        if ($date === null) {
+            return null;
+        }
+
+        if ($date instanceof \DateTimeImmutable) {
+            return $date;
+        }
+
+        if (!is_string($date)) {
+            throw new \UnexpectedValueException('Invalid database date type.');
+        }
+
+        try {
+            return new \DateTimeImmutable($date);
+        } catch (\Exception $e) {
+            throw new \UnexpectedValueException('Invalid database date format.', 0, $e);
+        }
     }
 }
