@@ -22,7 +22,7 @@ function checkKernel(bool $ok, string $message): void
 }
 
 session_start();
-$_SESSION['user'] = ['grant' => ['ROLE_USER']];
+$_SESSION['user'] = ['id' => 1, 'grant' => ['ROLE_USER']];
 
 $router = (new RouterFactory(new Container(), dirname(__DIR__)))->create();
 foreach (['/login', '/register'] as $path) {
@@ -31,7 +31,7 @@ foreach (['/login', '/register'] as $path) {
     checkKernel($get !== null && $post !== null, 'Missing web route: ' . $path);
     checkKernel($get->getRoute() instanceof GroupedRoute, 'GET should use RouteGroup: ' . $path);
     checkKernel($post->getRoute() instanceof GroupedRoute, 'POST should use RouteGroup: ' . $path);
-    checkKernel($get->getRoute()->getGrants() === [] && $post->getRoute()->getGrants() === [], 'Auth forms must remain public: ' . $path);
+    checkKernel($get->getRoute()->getGrants() === ['IS_GUEST'] && $post->getRoute()->getGrants() === ['IS_GUEST'], 'Auth forms must be guest-only: ' . $path);
     checkKernel($get->getRoute()->getMiddleware() === [], 'CSRF must not be on GET: ' . $path);
     checkKernel($post->getRoute()->getMiddleware() === [CsrfMiddleware::class], 'CSRF missing on POST: ' . $path);
 }
