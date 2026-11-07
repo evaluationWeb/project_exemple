@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-// Manual audit reproducer (not in CI until the issues are corrected).
+// Regression for S-01 and F-01 (no database service required).
 // Run: php tests/security/reproduce_repository_leak.php
 require dirname(__DIR__, 2) . '/vendor/autoload.php';
 
@@ -24,31 +24,50 @@ final class SimulatedDatabaseFailure extends PDO
     }
 }
 
+function verifyRepository(bool $condition, string $message): void
+{
+    if (!$condition) {
+        throw new RuntimeException($message);
+    }
+}
+
 $repository = new UserRepository(new SimulatedDatabaseFailure());
-foreach (['find' => fn () => $repository->find(1), 'findAll' => fn () => $repository->findAll()] as $name => $call) {
+foreach (['find' => static fn () => $repository->find(1), 'findAll' => static fn () => $repository->findAll()] as $name => $call) {
     ob_start();
+    $exception = null;
     try {
         $call();
-        $output = (string) ob_get_contents();
+    } catch (PDOException $caught) {
+        $exception = $caught;
     } finally {
-        ob_end_clean();
+        $output = (string) ob_get_clean();
     }
 
-    if (!str_contains($output, 'private_database_name')) {
-        throw new RuntimeException("Expected the current repository error leak in $name; review this reproducer if fixed.");
-    }
-    echo "$name: SQL exception message is exposed in output (confirmed)\n";
+    verifyRepository($exception instanceof PDOException, "$name must propagate PDO errors.");
+    verifyRepository($output === '', "$name exposed a PDO exception in the HTTP output.");
 }
+
+$base = [
+    'firstname' => 'Ada',
+    'lastname' => 'Lovelace',
+    'email' => 'ada@example.test',
+    'hash_password' => 'hash',
+    'created_at' => '2026-11-06 12:30:00',
+];
+$user = User::hydrate($base + ['updated_at' => '2026-11-07 12:00:00']);
+verifyRepository($user->getCreatedAt() instanceof DateTimeImmutable, 'created_at must be a date object.');
+verifyRepository($user->getCreatedAt()->format('Y-m-d H:i:s') === $base['created_at'], 'created_at changed.');
+verifyRepository($user->getUpdatedAt() instanceof DateTimeImmutable, 'updated_at must be a date object.');
+verifyRepository($user->getUpdatedAt()->format('Y-m-d H:i:s') === '2026-11-07 12:00:00', 'updated_at changed.');
+
+$user = User::hydrate($base + ['updated_at' => null]);
+verifyRepository($user->getUpdatedAt() === null, 'Nullable updated_at must remain null.');
 
 try {
-    User::hydrate([
-        'firstname' => 'Ada',
-        'lastname' => 'Lovelace',
-        'email' => 'ada@example.test',
-        'hash_password' => 'hash',
-        'updated_at' => '2026-11-07 12:00:00',
-    ]);
-    throw new RuntimeException('Expected TypeError for the raw SQL timestamp.');
-} catch (TypeError $expected) {
-    echo "User::hydrate: non-null SQL updated_at string triggers TypeError (confirmed)\n";
+    User::hydrate($base + ['updated_at' => ['bad-data']]);
+    throw new RuntimeException('Invalid updated_at type should have failed.');
+} catch (UnexpectedValueException $expected) {
+    // Malformed database records must not be silently accepted.
 }
+
+echo "Repository confidentiality and SQL date hydration: OK\n";
