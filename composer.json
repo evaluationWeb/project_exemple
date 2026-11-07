@@ -6,9 +6,9 @@
         }
     },
     "require": {
-        "mithridatem/router": "^1.7",
-        "mithridatem/autowiring": "^1.2",
-        "mithridatem/validation": "^1.2",
+        "mithridatem/router": "^1.7.1",
+        "mithridatem/autowiring": "^1.4.2",
+        "mithridatem/validation": "^1.2.1",
         "vlucas/phpdotenv": "^5.7",
         "symfony/var-dumper": "*"
     }
