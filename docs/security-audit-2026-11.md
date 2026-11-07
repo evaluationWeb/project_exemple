@@ -1,5 +1,11 @@
 # Audit de sécurité applicatif — project_exemple (2026-11-07)
 
+> **Suivi — correctifs proposés :** la PR de correction remplace l'affichage direct des
+> erreurs PDO par leur propagation vers le gestionnaire HTTP générique,
+> normalise les dates SQL pendant l'hydratation et transforme le
+> reproducteur manuel en test de non-régression exécuté dans la CI.
+> Les observations ci-dessous décrivent l'état au moment de l'audit initial.
+
 ## Portée et méthode
 
 Revue statique de `main` (Web/session/CSRF) et des composants significatifs
