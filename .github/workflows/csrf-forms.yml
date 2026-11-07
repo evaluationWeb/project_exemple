@@ -23,6 +23,8 @@ on:
       - 'tests/request_dto_mapping_test.php'
       - 'composer.json'
       - 'config/service.php'
+      - 'docs/security-audit-2026-11.md'
+      - 'tests/security/**'
       - '.github/workflows/csrf-forms.yml'
   workflow_dispatch:
 
@@ -62,6 +64,7 @@ jobs:
           php -l tests/form_submission_test.php
           php -l tests/auth_form_render_test.php
           php -l tests/request_dto_mapping_test.php
+          php -l tests/security/reproduce_repository_leak.php
       - name: Run focused tests
         run: |
           php tests/environment_loader_test.php
