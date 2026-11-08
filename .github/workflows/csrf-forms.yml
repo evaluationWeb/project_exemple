@@ -27,6 +27,8 @@ on:
       - 'docs/security-audit-2026-11.md'
       - 'tests/security/**'
       - 'src/Repository/**'
+      - 'src/Service/**'
+      - 'tests/lending_idor_test.php'
       - 'src/Entity/**'
       - '.github/workflows/csrf-forms.yml'
   workflow_dispatch:
@@ -39,7 +41,7 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
-          extensions: mbstring, intl, pdo_mysql
+          extensions: mbstring, intl, pdo_mysql, pdo_sqlite
           tools: composer:v2
       - name: Install dependencies
         run: composer install --no-interaction --prefer-dist
@@ -71,6 +73,10 @@ jobs:
           php -l tests/request_dto_mapping_test.php
           php -l tests/security/reproduce_repository_leak.php
           php -l src/Repository/UserRepository.php
+          php -l src/Repository/LendingRepository.php
+          php -l src/Service/LendingService.php
+          php -l src/Service/Exception/LendingNotFoundException.php
+          php -l tests/lending_idor_test.php
           php -l src/Entity/User.php
       - name: Run focused tests
         run: |
@@ -84,3 +90,4 @@ jobs:
           php tests/auth_form_render_test.php
           php tests/request_dto_mapping_test.php
           php tests/security/reproduce_repository_leak.php
+          php tests/lending_idor_test.php
